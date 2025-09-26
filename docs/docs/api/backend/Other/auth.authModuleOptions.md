@@ -1,3 +1,3 @@
 > `const` **authModuleOptions**: `RoutingControllersOptions`
 
-Defined in: [auth/index.ts:35](https://github.com/insaneonai/vibe/blob/a111fa4211a87a6c416016363bd99415cd0dedd7/backend/src/modules/auth/index.ts#L35)
+Defined in: [auth/index.ts:35](https://github.com/insaneonai/vibe/blob/3f368fe08e5207952d355e50545a95d65cc65318/backend/src/modules/auth/index.ts#L35)

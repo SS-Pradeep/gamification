@@ -27,6 +27,7 @@ export interface IGamifyEngineRepository {
   // Get a game metric by its ID
   readGameMetric(
     gameMetricId: string | ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<IGameMetric | null>;
 
@@ -37,12 +38,14 @@ export interface IGamifyEngineRepository {
   updateGameMetric(
     gameMetricId: string | ObjectId,
     gameMetric: Partial<IGameMetric>,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null>;
 
   // Delete a game metric by its ID
   deleteGameMetric(
     gameMetricId: string | ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null>;
 
@@ -55,6 +58,7 @@ export interface IGamifyEngineRepository {
   // Get an achievement by its ID
   readAchievement(
     achievementId: string | ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<IMetricAchievement | null>;
 
@@ -67,12 +71,14 @@ export interface IGamifyEngineRepository {
   updateAchievement(
     achievementId: string | ObjectId,
     achievement: Partial<IMetricAchievement>,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null>;
 
   // Delete an achievement by its ID (Soft delete)
   deleteAchievement(
     achievementId: string | ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null>;
 

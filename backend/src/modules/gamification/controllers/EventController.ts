@@ -17,6 +17,8 @@ import {
   Events,
   EventsBody,
   ReadEventParams,
+  UpdateEvents,
+  UpdateEventsBody,
 } from '#gamification/classes/index.js';
 import {GAMIFICATION_TYPES} from '../types.js';
 import {OpenAPI} from 'routing-controllers-openapi';
@@ -71,9 +73,9 @@ export class EventController {
   @Put('/events/:eventId')
   async updateEvent(
     @Params() params: ReadEventParams,
-    @Body() body: EventsBody,
+    @Body() body: UpdateEventsBody,
   ): Promise<{status: boolean}> {
-    const eventInstance = new Events(body);
+    const eventInstance = new UpdateEvents(body);
     const status = await this.eventService.updateEvent(
       params.eventId,
       eventInstance,
@@ -85,11 +87,13 @@ export class EventController {
   @Authorized(['admin', 'instructor'])
   @HttpCode(204)
   @Delete('/events/:eventId')
-  async deleteEvent(@Params() params: ReadEventParams): Promise<boolean> {
-    const result = await this.eventService.deleteEvent(params.eventId);
-    if (!result) {
+  async deleteEvent(
+    @Params() params: ReadEventParams,
+  ): Promise<{status: boolean}> {
+    const status = await this.eventService.deleteEvent(params.eventId);
+    if (!status) {
       throw new NotFoundError(`Event with ID ${params.eventId} not found`);
     }
-    return result;
+    return {status};
   }
 }

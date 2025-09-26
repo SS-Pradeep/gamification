@@ -43,6 +43,7 @@ export class userGameMetricsService extends BaseService {
       // Check if the metricId is valid
       const validMetric = await this.gamifyEngineRepo.readGameMetric(
         userGameMetric.metricId,
+        ObjectId.isValid(userGameMetric.metricId.toString()),
         session,
       );
 

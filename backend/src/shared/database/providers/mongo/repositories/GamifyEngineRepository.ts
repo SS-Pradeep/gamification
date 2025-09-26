@@ -26,6 +26,7 @@ import {
   AchievementStatus,
   StreakResolutionType,
   ID,
+  IUpdateGameMetric,
 } from '#root/shared/interfaces/models.js';
 
 /**
@@ -78,6 +79,34 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
         await this.userAchievementCollection.createIndex(
           {userId: 1},
           {name: 'userId_achievements', background: true},
+        );
+
+        // add composite index for slug and scope with unique constraint on metric collection
+        await this.metricCollection.createIndex(
+          {slug: 1, scope: 1},
+          {
+            name: 'slug_scope_metrics',
+            unique: true,
+            background: true,
+            partialFilterExpression: {
+              slug: {$exists: true},
+              scope: {$exists: true},
+            },
+          },
+        );
+
+        // add composite index for slug and scope with unique constraint on achievement collection
+        await this.achievementCollection.createIndex(
+          {slug: 1, scope: 1},
+          {
+            name: 'slug_scope_achievements',
+            unique: true,
+            background: true,
+            partialFilterExpression: {
+              slug: {$exists: true},
+              scope: {$exists: true},
+            },
+          },
         );
 
         console.log('GamifyEngineRepository indexes created successfully');
@@ -177,14 +206,24 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
   // Get a game metric by its ID
   async readGameMetric(
-    gameMetricId: ObjectId,
+    gameMetricId: ObjectId | string,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<IGameMetric | null> {
     await this.init();
-    const metric = await this.metricCollection.findOne(
-      {_id: gameMetricId},
-      {session},
-    );
+    let metric;
+
+    if (bySlug && typeof gameMetricId === 'string') {
+      metric = await this.metricCollection.findOne(
+        {slug: gameMetricId},
+        {session},
+      );
+    } else {
+      metric = await this.metricCollection.findOne(
+        {_id: gameMetricId},
+        {session},
+      );
+    }
 
     if (metric) {
       return metric;
@@ -206,17 +245,28 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
   // Update a game metric by its ID
   async updateGameMetric(
-    gameMetricId: ObjectId,
-    gameMetric: Partial<IGameMetric>,
+    gameMetricId: ObjectId | string,
+    gameMetric: IUpdateGameMetric,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null> {
     await this.init();
 
-    const result = await this.metricCollection.updateOne(
-      {_id: gameMetricId},
-      {$set: gameMetric},
-      {session},
-    );
+    let result: UpdateResult;
+
+    if (bySlug && typeof gameMetricId === 'string') {
+      result = await this.metricCollection.updateOne(
+        {slug: gameMetricId},
+        {$set: gameMetric},
+        {session},
+      );
+    } else {
+      result = await this.metricCollection.updateOne(
+        {_id: gameMetricId},
+        {$set: gameMetric},
+        {session},
+      );
+    }
 
     if (result.acknowledged) {
       return result;
@@ -228,14 +278,24 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
   // Delete a game metric by its ID
   async deleteGameMetric(
     gameMetricId: string,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null> {
     await this.init();
 
-    const result = await this.metricCollection.deleteOne(
-      {_id: new ObjectId(gameMetricId)},
-      {session},
-    );
+    let result: DeleteResult;
+
+    if (bySlug) {
+      result = await this.metricCollection.deleteOne(
+        {slug: gameMetricId},
+        {session},
+      );
+    } else {
+      result = await this.metricCollection.deleteOne(
+        {_id: new ObjectId(gameMetricId)},
+        {session},
+      );
+    }
 
     if (result.acknowledged) {
       return result;
@@ -269,15 +329,25 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
   // Get an achievement by its ID
   async readAchievement(
-    achievementId: ObjectId,
+    achievementId: string | ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<IMetricAchievement | null> {
     await this.init();
 
-    const achievement = await this.achievementCollection.findOne(
-      {_id: achievementId},
-      {session},
-    );
+    let achievement;
+
+    if (bySlug && typeof achievementId === 'string') {
+      achievement = await this.achievementCollection.findOne(
+        {slug: achievementId},
+        {session},
+      );
+    } else {
+      achievement = await this.achievementCollection.findOne(
+        {_id: achievementId},
+        {session},
+      );
+    }
 
     if (achievement) {
       return achievement;
@@ -303,15 +373,26 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
   async updateAchievement(
     achievementId: ObjectId,
     achievement: Partial<IMetricAchievement>,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null> {
     await this.init();
 
-    const result = await this.achievementCollection.updateOne(
-      {_id: achievementId},
-      {$set: achievement},
-      {session},
-    );
+    let result: UpdateResult;
+
+    if (bySlug && typeof achievementId === 'string') {
+      result = await this.achievementCollection.updateOne(
+        {slug: achievementId},
+        {$set: achievement},
+        {session},
+      );
+    } else {
+      result = await this.achievementCollection.updateOne(
+        {_id: achievementId},
+        {$set: achievement},
+        {session},
+      );
+    }
 
     if (result.acknowledged) {
       return result;
@@ -322,17 +403,28 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
   // Delete an achievement by its ID
   async deleteAchievement(
     achievementId: ObjectId,
+    bySlug: boolean,
     session?: ClientSession,
   ): Promise<UpdateResult | null> {
     await this.init();
 
     // Perform a soft delete by updating the status.
 
-    const result = await this.achievementCollection.updateOne(
-      {_id: achievementId},
-      {$set: {status: AchievementStatus.INACTIVE}},
-      {session},
-    );
+    let result;
+
+    if (bySlug && typeof achievementId === 'string') {
+      result = await this.achievementCollection.updateOne(
+        {slug: achievementId},
+        {$set: {status: AchievementStatus.INACTIVE}},
+        {session},
+      );
+    } else {
+      result = await this.achievementCollection.updateOne(
+        {_id: achievementId},
+        {$set: {status: AchievementStatus.INACTIVE}},
+        {session},
+      );
+    }
 
     if (result.acknowledged) {
       return result;

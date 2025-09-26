@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Gamification Layer is an abstraction layer on top of GamificationEngine which provides additional functions such as defining and managing **events** and **rules**.
+The Gamification Layer is an abstraction layer on top of GamificationEngine which provides additional functions such as defining and managing **events(User actions)** and **rules(conditions for attaining rewards)**.
 
 Use the Gamification Layer when your gamification logic involves complex conditions or relies on external data sources that are not part of the gamification system.
 
@@ -25,7 +25,7 @@ _Note: The Gamification Layer handles all event and rule processing, while the G
 
 ### 📅 Events
 
-**Events** represent user actions such as **"completed quiz", "finished lesson", or "logged in"**, events are associated with one or more rules. Events also define the **structure of the data (external)** that the system can receive and act upon.
+**Events** represent user actions such as **"completed quiz", "finished lesson", or "logged in"**, Each event can have one or more rules linked to it. Events also define the **structure of the data (external)** that the system can receive and act upon.
 
 #### What they do?
 

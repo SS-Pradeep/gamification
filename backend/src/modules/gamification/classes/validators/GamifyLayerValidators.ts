@@ -7,10 +7,18 @@ import {
   ValidationArguments,
   IsMongoId,
   IsObject,
+  IsOptional,
 } from 'class-validator';
 import {JSONSchema} from 'class-validator-jsonschema';
-import {IEvents, IRule} from '#shared/interfaces/models.js';
+import {
+  ICurrency,
+  IEvents,
+  IRule,
+  IUpdateEvents,
+  IUpdateRule,
+} from '#shared/interfaces/models.js';
 import {ObjectId} from 'mongodb';
+import {IsMongoIdOrSlug} from './GamifyEngineValidators.js';
 
 /**
  * Validator for Events
@@ -102,9 +110,28 @@ export class EventsBody implements IEvents {
   })
   @IsRecordOfEventPayload(EventPayloadType)
   eventPayload: Record<string, EventPayloadType>;
+
+  @JSONSchema({
+    title: 'Slug',
+    description: 'Unique slug identifier for the event',
+    example: 'user-signup',
+    type: 'string',
+  })
+  @IsString()
+  slug: string;
+
+  @JSONSchema({
+    title: 'Scope',
+    description:
+      'Scope of the event (e.g., global, course-specific) typically tenant id',
+    example: 'global',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
 }
 
-export class UpdateEventsBody implements IEvents {
+export class UpdateEventsBody implements IUpdateEvents {
   @JSONSchema({
     title: 'Event Name',
     description: 'Name of the event',
@@ -151,7 +178,7 @@ export class UpdateEventsBody implements IEvents {
 }
 
 export class ReadEventParams {
-  @IsString()
+  @IsMongoIdOrSlug()
   eventId: string;
 }
 
@@ -211,16 +238,25 @@ export class RuleBody implements IRule {
     type: 'number',
   })
   ruleVersion: number;
-}
-export class ReadRulesParams {
+
   @JSONSchema({
-    title: 'Event ID',
-    description: 'ID of the event to find rules for',
-    example: '60d5ec49b3f1c8e4a8f8b8c1',
+    title: 'Slug',
+    description: 'Unique slug identifier for the rule',
+    example: 'quick-learner-rule',
     type: 'string',
   })
-  @IsMongoId()
-  eventId: string;
+  @IsString()
+  slug: string;
+
+  @JSONSchema({
+    title: 'Scope',
+    description:
+      'Scope of the rule (e.g., global, course-specific) typically tenant id',
+    example: 'global',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
 }
 
 export class ReadRuleParams {
@@ -230,29 +266,18 @@ export class ReadRuleParams {
     example: '60d5ec49b3f1c8e4a8f8b8c2',
     type: 'string',
   })
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   ruleId: string;
 }
 
-export class UpdateRuleParams {
+export class UpdateRuleBody {
   @JSONSchema({
     title: 'Rule ID',
     description: 'ID of the rule to update',
     example: '60d5ec49b3f1c8e4a8f8b8c2',
     type: 'string',
   })
-  @IsMongoId()
-  ruleId: string;
-}
-
-export class UpdateRuleBody implements IRule {
-  @JSONSchema({
-    title: 'Rule ID',
-    description: 'ID of the rule to update',
-    example: '60d5ec49b3f1c8e4a8f8b8c2',
-    type: 'string',
-  })
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   ruleId: string;
 
   @JSONSchema({
@@ -338,4 +363,134 @@ export class EventTriggerBody {
   })
   @IsObject()
   eventPayload: Record<string, any>;
+}
+
+export class CurrencyBody implements ICurrency {
+  @JSONSchema({
+    title: 'name',
+    description: 'Name of the currency',
+    example: 'Gold Coins',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @JSONSchema({
+    title: 'description',
+    description: 'Description of the currency',
+    example: 'Primary currency used for rewards',
+    type: 'string',
+  })
+  @IsString()
+  description: string;
+
+  @JSONSchema({
+    title: 'icon',
+    description: 'Icon representing the currency (URL or icon name)',
+    example: 'https://example.com/icons/gold-coin.png',
+    type: 'string',
+  })
+  @IsString()
+  icon: string;
+
+  @JSONSchema({
+    title: 'exchangeValue',
+    description:
+      'Exchange value of the currency relative to the base currency (e.g., 1 Gold Coin = 100 points)',
+    example: 100,
+    type: 'number',
+  })
+  @IsNotEmpty()
+  exchangeValue: number;
+
+  @JSONSchema({
+    title: 'isBaseCurrency',
+    description:
+      'Indicates if this currency is the base currency for the system',
+    example: false,
+    type: 'boolean',
+  })
+  @IsNotEmpty()
+  isBaseCurrency: boolean;
+
+  @JSONSchema({
+    title: 'slug',
+    description: 'Unique slug identifier for the currency',
+    example: 'gold-coins',
+    type: 'string',
+  })
+  @IsString()
+  slug: string;
+
+  @JSONSchema({
+    title: 'scope',
+    description:
+      'Scope of the currency (e.g., global, course-specific) typically tenant id',
+    example: 'global',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
+}
+
+export class ReadCurrencyParams {
+  @JSONSchema({
+    title: 'Currency ID',
+    description: 'ID of the currency to retrieve',
+    example: '60d5ec49b3f1c8e4a8f8b8c4',
+    type: 'string',
+  })
+  @IsMongoIdOrSlug()
+  currencyId: string;
+}
+
+export class UpdateCurrencyBody {
+  @JSONSchema({
+    title: 'name',
+    description: 'Name of the currency',
+    example: 'Gold Coins',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @JSONSchema({
+    title: 'description',
+    description: 'Description of the currency',
+    example: 'Primary currency used for rewards',
+    type: 'string',
+  })
+  @IsString()
+  description: string;
+
+  @JSONSchema({
+    title: 'icon',
+    description: 'Icon representing the currency (URL or icon name)',
+    example: 'https://example.com/icons/gold-coin.png',
+    type: 'string',
+  })
+  @IsString()
+  icon: string;
+
+  @JSONSchema({
+    title: 'exchangeValue',
+    description:
+      'Exchange value of the currency relative to the base currency (e.g., 1 Gold Coin = 100 points)',
+    example: 100,
+    type: 'number',
+  })
+  @IsNotEmpty()
+  exchangeValue: number;
+
+  @JSONSchema({
+    title: 'isBaseCurrency',
+    description:
+      'Indicates if this currency is the base currency for the system',
+    example: false,
+    type: 'boolean',
+  })
+  @IsNotEmpty()
+  isBaseCurrency: boolean;
 }

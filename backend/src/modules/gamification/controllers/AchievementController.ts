@@ -26,6 +26,7 @@ import {
   GetUserGameAchievementParams,
   UpdateUserGameAchievementBody,
   DeleteUserGameAchievementParams,
+  UpdateMetricAchievement,
 } from '#gamification/classes/index.js';
 
 import {GAMIFICATION_TYPES} from '../types.js';
@@ -101,7 +102,7 @@ export class AchievementController {
     // It expects the body to contain the achievement data.
     const {achievementId} = body;
 
-    const achievementData = new MetricAchievement(body);
+    const achievementData = new UpdateMetricAchievement(body);
 
     const updateResult = await this.AchievementService.updateAchievement(
       achievementId,

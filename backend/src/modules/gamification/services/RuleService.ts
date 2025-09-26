@@ -35,7 +35,11 @@ export class ruleService extends BaseService {
 
       // Validate the rule with the event payload.
 
-      const event = await this.gamifyLayerRepo.readEvent(rule.eventId, session);
+      const event = await this.gamifyLayerRepo.readEvent(
+        rule.eventId,
+        false,
+        session,
+      );
 
       // If the event does not exist, throw an error
 
@@ -143,8 +147,10 @@ export class ruleService extends BaseService {
 
   async readRule(id: string): Promise<Rule> {
     return this._withTransaction(async session => {
-      const ruleId = new ObjectId(id);
-      const rule = await this.gamifyLayerRepo.readRule(ruleId, session);
+      const isSlug = ObjectId.isValid(id) ? false : true;
+      const ruleId = !isSlug ? new ObjectId(id) : id;
+
+      const rule = await this.gamifyLayerRepo.readRule(ruleId, isSlug, session);
 
       if (!rule) {
         throw new NotFoundError(`Rule with ID ${ruleId} not found`);
@@ -155,9 +161,12 @@ export class ruleService extends BaseService {
 
   async updateRule(id: string, rule: Partial<Rule>): Promise<boolean> {
     return this._withTransaction(async session => {
-      const ruleId = new ObjectId(id); // Convert string to ObjectId here
+      const isSlug = ObjectId.isValid(id) ? false : true;
+      const ruleId = !isSlug ? new ObjectId(id) : id;
+
       const updateResult = await this.gamifyLayerRepo.updateRule(
         ruleId,
+        isSlug,
         rule,
         session,
       );
@@ -172,9 +181,12 @@ export class ruleService extends BaseService {
 
   async deleteRule(id: string): Promise<boolean> {
     return this._withTransaction(async session => {
-      const ruleId = new ObjectId(id);
+      const isSlug = ObjectId.isValid(id) ? false : true;
+      const ruleId = !isSlug ? new ObjectId(id) : id;
+
       const deleteResult = await this.gamifyLayerRepo.deleteRule(
         ruleId,
+        isSlug,
         session,
       );
 
@@ -189,9 +201,13 @@ export class ruleService extends BaseService {
 
   async deleteRulesByEventId(eventId: string): Promise<boolean> {
     return this._withTransaction(async session => {
-      const objectId = new ObjectId(eventId);
+      const isSlug = ObjectId.isValid(eventId) ? false : true;
+
+      const objectId = !isSlug ? new ObjectId(eventId) : eventId;
+
       const deleteResult = await this.gamifyLayerRepo.deleteRulesByEventId(
         objectId,
+        isSlug,
         session,
       );
 

@@ -1,4 +1,10 @@
-import {IEvents, IRule} from '#root/shared/interfaces/models.js';
+import {
+  ICurrency,
+  IEvents,
+  IRule,
+  IUpdateCurrency,
+  IUpdateEvents,
+} from '#root/shared/interfaces/models.js';
 import {ClientSession, UpdateResult, DeleteResult, ObjectId} from 'mongodb';
 
 export interface IGamifyLayerRepository {
@@ -6,15 +12,18 @@ export interface IGamifyLayerRepository {
   readEvents(session?: ClientSession): Promise<IEvents[] | null>;
   readEvent(
     eventId: ObjectId | string,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<IEvents | null>;
   updateEvent(
     eventId: ObjectId | string,
-    event: Partial<IEvents>,
+    isSlug: boolean,
+    event: IUpdateEvents,
     session?: ClientSession,
   ): Promise<UpdateResult | null>;
   deleteEvent(
-    evenetId: ObjectId | string,
+    eventId: ObjectId | string,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null>;
 
@@ -23,20 +32,55 @@ export interface IGamifyLayerRepository {
     eventId: ObjectId | string,
     session?: ClientSession,
   ): Promise<IRule[] | null>;
-  readRule(ruleId: ObjectId, session?: ClientSession): Promise<IRule | null>;
+  readRule(
+    ruleId: ObjectId | string,
+    isSlug: boolean,
+    session?: ClientSession,
+  ): Promise<IRule | null>;
 
   updateRule(
     ruleId: ObjectId | string,
+    isSlug: boolean,
     rule: Partial<IRule>,
     session?: ClientSession,
   ): Promise<UpdateResult | null>;
 
   deleteRule(
     ruleId: ObjectId | string,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null>;
   deleteRulesByEventId(
-    eventId: ObjectId,
+    eventId: ObjectId | string,
+    isSlug: boolean,
+    session?: ClientSession,
+  ): Promise<DeleteResult | null>;
+
+  // CRUD for Currency
+
+  createCurrency(
+    currency: ICurrency,
+    session?: ClientSession,
+  ): Promise<ICurrency | null>;
+
+  updateCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
+    currency: IUpdateCurrency,
+    session?: ClientSession,
+  ): Promise<UpdateResult | null>;
+
+  readCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
+    session?: ClientSession,
+  ): Promise<ICurrency | null>;
+
+  readAllCurrencies(session?: ClientSession): Promise<ICurrency[] | null>;
+
+  deleteCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null>;
 }

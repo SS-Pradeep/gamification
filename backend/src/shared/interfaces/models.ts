@@ -449,15 +449,28 @@ export enum StreakResolutionType {
   FAILRESET = 'FailReset',
 }
 
+interface MetaDataMixin {
+  slug: string;
+  scope: string;
+}
+
 // GameMetric interface
-export interface IGameMetric {
+export interface IGameMetric extends MetaDataMixin {
   _id?: string | ObjectId | null;
   name: string;
-  description?: string;
+  description: string;
   type: GameMetricType;
   units: string;
   defaultIncrementValue: number;
+  streakResolutionStrategy?: StreakResolutionType;
+}
 
+export interface IUpdateGameMetric {
+  name: string;
+  description: string;
+  type: GameMetricType;
+  units: string;
+  defaultIncrementValue: number;
   streakResolutionStrategy?: StreakResolutionType;
 }
 
@@ -472,7 +485,7 @@ export enum AchievementStatus {
   DELETED = 'DELETED',
 }
 
-export interface IAchievementBase {
+export interface IAchievementBase extends MetaDataMixin {
   _id?: string | ObjectId | null;
   name: string;
   description: string;
@@ -481,6 +494,16 @@ export interface IAchievementBase {
   badgeUrl: string; // URL to the badge image
   rewardMetricId?: string | ObjectId; // Optional field to link achievements to specific metrics
   rewardIncrementValue?: number; //Optional field to specify the increment value for the reward metric
+}
+
+export interface IUpdateMetricAchievement {
+  name: string;
+  description: string;
+  trigger: Trigger;
+  status: AchievementStatus;
+  badgeUrl: string; // URL to the badge image
+  rewardMetricId: string | ObjectId; // Optional field to link achievements to specific metrics
+  rewardIncrementValue: number; //Optional field to specify the increment value for the reward metric
 }
 
 export interface IMetricAchievement extends IAchievementBase {
@@ -527,17 +550,35 @@ export interface IMetricTrigger {
 }
 
 // Event interface
-export interface IEvents {
+export interface IEvents extends MetaDataMixin {
   _id?: string | ObjectId | null;
   eventName: string; // Name of the event
   eventDescription: string; // Description of the event
   eventVersion: string; // Version of the event
   eventPayload: Record<string, any>; // Payload of the event
+  slug: string; // Unique slug identifier for the event
+  scope: string; // Scope of the event (e.g., global, course-specific) typically tenant id
+}
+
+export interface IUpdateEvents {
+  eventName: string;
+  eventDescription: string;
+  eventVersion: string;
+  eventPayload: Record<string, any>; // Payload of the event
 }
 
 // Rules interface
-export interface IRule {
+export interface IRule extends MetaDataMixin {
   _id?: string | ObjectId | null;
+  ruleName: string;
+  ruleDescription: string;
+  eventId: string | ObjectId;
+  metricId: string | ObjectId;
+  logic: Record<string, any>;
+  ruleVersion: number;
+}
+
+export interface IUpdateRule {
   ruleName: string;
   ruleDescription: string;
   eventId: string | ObjectId;
@@ -550,4 +591,21 @@ export interface IRule {
 export interface IMetricTriggerResponse {
   metricsUpdated: IMetrics[];
   achievementsUnlocked: IAchievement[];
+}
+
+export interface ICurrency extends MetaDataMixin {
+  _id?: string | ObjectId | null;
+  name: string;
+  description: string;
+  icon: string;
+  exchangeValue: number; // Value in its own currency
+  isBaseCurrency: boolean; // Indicates if this is the base currency
+}
+
+export interface IUpdateCurrency {
+  name: string;
+  description: string;
+  icon: string;
+  exchangeValue: number; // Value in its own currency
+  isBaseCurrency: boolean; // Indicates if this is the base currency
 }

@@ -18,7 +18,7 @@ import {
   RuleBody,
   UpdateRuleBody,
   ReadRuleParams,
-  ReadRulesParams,
+  ReadEventParams,
 } from '#gamification/classes/index.js';
 import {GAMIFICATION_TYPES} from '../types.js';
 import {OpenAPI} from 'routing-controllers-openapi';
@@ -52,7 +52,7 @@ export class RuleController {
 
   @Authorized(['admin', 'instructor'])
   @Get('/rules/event/:eventId')
-  async readRules(@Params() params: ReadRulesParams): Promise<Rule[] | null> {
+  async readRules(@Params() params: ReadEventParams): Promise<Rule[] | null> {
     // Convert string ID to ObjectId
     const rules = await this.ruleService.readRules(params.eventId);
     // Return plain object array if rules exist, otherwise null
@@ -96,7 +96,7 @@ export class RuleController {
   @HttpCode(204)
   @Delete('/rules/event/:eventId')
   async deleteRulesByEventId(
-    @Params() params: ReadRulesParams,
+    @Params() params: ReadEventParams,
   ): Promise<boolean> {
     const result = await this.ruleService.deleteRulesByEventId(params.eventId);
     if (!result) {

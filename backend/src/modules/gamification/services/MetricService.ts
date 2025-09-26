@@ -5,9 +5,10 @@ import {
   BaseService,
   MongoDatabase,
   IGamifyEngineRepository,
+  IUpdateGameMetric,
 } from '#root/shared/index.js';
 import {GLOBAL_TYPES} from '#root/types.js';
-import {GameMetric} from '#gamification/classes/index.js';
+import {GameMetric, UpdateGameMetric} from '#gamification/classes/index.js';
 import {plainToInstance} from 'class-transformer';
 
 /**
@@ -51,11 +52,18 @@ export class metricService extends BaseService {
    */
   getGameMetricById(id: string): Promise<GameMetric | null> {
     return this._withTransaction(async session => {
-      const metricId = new ObjectId(id);
-      const metric = await this.gamifyEngineRepo.readGameMetric(
-        metricId,
-        session,
-      );
+      let metric;
+
+      if (ObjectId.isValid(id)) {
+        const metricId = new ObjectId(id);
+        metric = await this.gamifyEngineRepo.readGameMetric(
+          metricId,
+          false,
+          session,
+        );
+      } else {
+        metric = await this.gamifyEngineRepo.readGameMetric(id, true, session);
+      }
 
       if (!metric) {
         throw new NotFoundError(`Game metric with ID ${id} not found`);
@@ -84,15 +92,26 @@ export class metricService extends BaseService {
    */
   updateGameMetric(
     id: string,
-    gameMetric: Partial<GameMetric>,
+    gameMetric: IUpdateGameMetric,
   ): Promise<boolean> {
     return this._withTransaction(async session => {
-      // Check if the game metric exists
-      const metricId = new ObjectId(id);
+      const isSlug = !ObjectId.isValid(id);
+      const gameMetricId = isSlug ? id : new ObjectId(id);
 
-      const updatedResult = await this.gamifyEngineRepo.updateGameMetric(
-        metricId,
+      let updatedResult;
+
+      gameMetric = plainToInstance(
+        UpdateGameMetric,
+        {...gameMetric},
+        {
+          excludeExtraneousValues: true,
+        },
+      );
+
+      updatedResult = await this.gamifyEngineRepo.updateGameMetric(
+        gameMetricId,
         gameMetric,
+        isSlug,
         session,
       );
 
@@ -111,10 +130,18 @@ export class metricService extends BaseService {
    */
   deleteGameMetric(id: string): Promise<boolean> {
     return this._withTransaction(async session => {
-      const metricId = new ObjectId(id);
+      let deleteResult;
 
-      const deleteResult = await this.gamifyEngineRepo.deleteGameMetric(
-        metricId,
+      const isSlug = !ObjectId.isValid(id);
+      const gameMetricId = isSlug ? id : new ObjectId(id);
+
+      const metricId = isSlug
+        ? (await this.gamifyEngineRepo.readGameMetric(id, true, session))?._id
+        : gameMetricId;
+
+      deleteResult = await this.gamifyEngineRepo.deleteGameMetric(
+        gameMetricId,
+        isSlug,
         session,
       );
 

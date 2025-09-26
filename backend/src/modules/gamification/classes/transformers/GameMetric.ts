@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {Expose, Transform} from 'class-transformer';
+import {Exclude, Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
   StringToObjectId,
@@ -8,6 +8,7 @@ import {ID} from '#shared/index.js';
 import {
   GameMetricType,
   IGameMetric,
+  IUpdateGameMetric,
   StreakResolutionType,
 } from '#shared/interfaces/models.js';
 import {JSONSchema} from 'class-validator-jsonschema';
@@ -49,7 +50,110 @@ class GameMetric implements IGameMetric {
     example: 'Points earned by the user for completing tasks',
     type: 'string',
   })
-  description?: string;
+  description: string;
+
+  // Type of metric (number, streak, etc.)
+  @Expose()
+  @JSONSchema({
+    title: 'Metric Type',
+    description: 'Type of the metric, e.g; number or streak',
+    example: 'Number',
+    type: 'string',
+  })
+  type: GameMetricType;
+
+  // Unit of measurement for this metric
+  @Expose()
+  @JSONSchema({
+    title: 'Units',
+    description: 'unit of the metric, e.g; points, coins, etc.',
+    example: 'points',
+    type: 'string',
+  })
+  units: string;
+
+  // Default amount to increase metric by when triggered
+  @Expose()
+  @JSONSchema({
+    title: 'defaultIncrementValue',
+    description: 'default value by which the metric is incremented, e.g; 10',
+    example: '10',
+    type: 'number',
+  })
+  defaultIncrementValue: number;
+
+  // Streak resolution strategy for this metric
+  @Expose()
+  @JSONSchema({
+    title: 'Streak Resolution Strategy',
+    description:
+      'Strategy for resolving streaks (Consecutive, Daily, FailReset)',
+    example: 'Consecutive',
+    type: 'string',
+    enum: ['Consecutive', 'Daily', 'FailReset'],
+  })
+  streakResolutionStrategy?: StreakResolutionType;
+
+  @JSONSchema({
+    title: 'Slug',
+    description:
+      'URL-friendly unique identifier for the metric, typically lowercase with hyphens',
+    example: 'points',
+    type: 'string',
+  })
+  @Expose()
+  slug: string;
+
+  @Expose()
+  @JSONSchema({
+    title: 'Scope',
+    description: 'The scope of the metric, e.g; "user", "global"',
+    example: 'user',
+    type: 'string',
+  })
+  scope: string;
+
+  /**
+   * Constructor - creates a new GameMetric instance
+   * @param gameMetricBody - Optional data to populate the metric
+   */
+  constructor(gameMetricBody?: CreateGameMetricBody) {
+    if (gameMetricBody) {
+      this.name = gameMetricBody.name;
+      this.description = gameMetricBody.description;
+      this.type = gameMetricBody.type;
+      this.units = gameMetricBody.units;
+      this.defaultIncrementValue = gameMetricBody.defaultIncrementValue;
+      if (gameMetricBody.streakResolutionStrategy) {
+        this.streakResolutionStrategy = gameMetricBody.streakResolutionStrategy;
+      }
+      this.slug = gameMetricBody?.slug;
+      this.scope = gameMetricBody?.scope;
+    }
+  }
+}
+
+class UpdateGameMetric implements IUpdateGameMetric {
+  // Display name of the metric
+  @Expose()
+  @JSONSchema({
+    title: 'Metric Name',
+    description: 'Name of the Metric',
+    example: 'Points',
+    type: 'string',
+  })
+  name: string;
+
+  // Optional description explaining what this metric tracks
+  @Expose()
+  @JSONSchema({
+    title: 'Metric Description',
+    description:
+      'Description of the metric, explaining its purpose and how it is used in the game',
+    example: 'Points earned by the user for completing tasks',
+    type: 'string',
+  })
+  description: string;
 
   // Type of metric (number, streak, etc.)
   @Expose()
@@ -118,10 +222,12 @@ class GameMetric implements IGameMetric {
 class GameMetricResponse implements IGameMetric {
   _id?: string;
   name: string;
-  description?: string;
+  description: string;
   type: GameMetricType;
   units: string;
   defaultIncrementValue: number;
+  slug: string;
+  scope: string;
 
   /**
    * Constructor - creates a response object from a GameMetric
@@ -138,4 +244,4 @@ class GameMetricResponse implements IGameMetric {
     }
   }
 }
-export {GameMetric, GameMetricResponse};
+export {GameMetric, GameMetricResponse, UpdateGameMetric};

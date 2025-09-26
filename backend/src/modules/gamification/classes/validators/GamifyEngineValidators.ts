@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import {
   IsNotEmpty,
   IsString,
+  registerDecorator,
   IsNumber,
   IsEnum,
   IsMongoId,
@@ -16,6 +17,8 @@ import {
   IAchievement,
   IGameMetric,
   IMetricAchievement,
+  IUpdateGameMetric,
+  IUpdateMetricAchievement,
   IUserGameAchievement,
   IUserGameMetric,
   StreakResolutionType,
@@ -25,6 +28,34 @@ import {JSONSchema} from 'class-validator-jsonschema';
 import {ObjectId} from 'mongodb';
 
 // ==================== GAME METRICS VALIDATORS ====================
+
+/**
+ * Custom validator for MongoId and Slug string.
+ */
+
+export function IsMongoIdOrSlug() {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isMongoIdOrSlug',
+      target: object.constructor,
+      propertyName,
+      constraints: [],
+      validator: {
+        validate(value: any) {
+          const validMongoId = ObjectId.isValid(value);
+          const validSlug =
+            typeof value === 'string' &&
+            /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) &&
+            value.length < 23;
+          return validMongoId || validSlug;
+        },
+        defaultMessage() {
+          return `${propertyName} must be a valid MongoId or slug string (lowercase letters, numbers, hyphens)`;
+        },
+      },
+    });
+  };
+}
 
 /**
  * Validator for creating a new game metric
@@ -50,7 +81,7 @@ export class CreateGameMetricBody implements IGameMetric {
     type: 'string',
   })
   @IsString()
-  description?: string;
+  description: string;
 
   // Type of metric (number, streak, etc.)
   @JSONSchema({
@@ -97,6 +128,26 @@ export class CreateGameMetricBody implements IGameMetric {
   @IsOptional()
   @IsEnum(StreakResolutionType)
   streakResolutionStrategy?: StreakResolutionType;
+
+  // Slug for the metric (URL-friendly identifier)
+  @JSONSchema({
+    title: 'Slug',
+    description: 'A URL-friendly identifier for the metric',
+    example: 'points',
+    type: 'string',
+  })
+  @IsString()
+  slug: string;
+
+  // Scope of the metric (e.g., "user", "global")
+  @JSONSchema({
+    title: 'Scope',
+    description: 'The scope of the metric, e.g; "user", "global"',
+    example: 'user',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
 }
 
 /**
@@ -109,19 +160,19 @@ export class GameMetricsParams {
   // MongoDB ID of the metric
   @JSONSchema({
     title: 'Game metric Id.',
-    description: 'The mongoId of game Metric.',
+    description: 'The mongoId or slug of game Metric.',
     type: 'string',
     example: '68593511b809b47d9b389262',
   })
   @IsNotEmpty()
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   metricId: string;
 }
 
 /**
  * Validator for updating an existing game metric
  */
-export class updateGameMetric implements Partial<IGameMetric> {
+export class updateGameMetric implements IUpdateGameMetric {
   // MongoDB ID of the metric to update
   @JSONSchema({
     title: 'Game Metric Id',
@@ -130,7 +181,7 @@ export class updateGameMetric implements Partial<IGameMetric> {
     example: '68593511b809b47d9b389262',
   })
   @IsNotEmpty()
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   metricId: string;
 
   // Updated name for the metric
@@ -153,7 +204,7 @@ export class updateGameMetric implements Partial<IGameMetric> {
     type: 'string',
   })
   @IsString()
-  description?: string;
+  description: string;
 
   // Updated metric type
   @JSONSchema({
@@ -306,6 +357,25 @@ export class CreateMetricAchievementBody implements IMetricAchievement {
   @IsNumber()
   @IsOptional()
   rewardIncrementValue?: number;
+
+  @JSONSchema({
+    title: 'Slug',
+    description: 'A URL-friendly identifier for the achievement',
+    example: 'points-master',
+    type: 'string',
+  })
+  @IsString()
+  slug: string;
+
+  @JSONSchema({
+    title: 'Scope',
+    description:
+      'Scope of the achievement, e.g., global or specific to a game/module',
+    example: 'global',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
 }
 
 /**
@@ -323,16 +393,14 @@ export class AchievementParams {
     example: '68593511b809b47d9b389262',
   })
   @IsNotEmpty()
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   achievementId: string;
 }
 
 /**
  * Validator for updating an existing achievement
  */
-export class UpdateMetricAchievementBody
-  implements Partial<IMetricAchievement>
-{
+export class UpdateMetricAchievementBody implements IUpdateMetricAchievement {
   // MongoDB ID of the achievement to update
   @JSONSchema({
     title: 'Achievement Id',
@@ -341,7 +409,7 @@ export class UpdateMetricAchievementBody
     example: '68593511b809b47d9b389262',
   })
   @IsNotEmpty()
-  @IsMongoId()
+  @IsMongoIdOrSlug()
   achievementId: string;
 
   // Updated achievement name
@@ -430,7 +498,7 @@ export class UpdateMetricAchievementBody
   })
   @IsMongoId()
   @IsOptional()
-  rewardMetricId?: string;
+  rewardMetricId: string;
 
   @JSONSchema({
     title: 'Reward Increment Value',
@@ -440,7 +508,7 @@ export class UpdateMetricAchievementBody
   })
   @IsNumber()
   @IsOptional()
-  rewardIncrementValue?: number;
+  rewardIncrementValue: number;
 }
 
 /**

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Gamification Engine is a dedicated service that updates user metrics and evaluates achievements only at the metric level. It is not aware of events or rules. These are handled in the Gamification Layer, which processes incoming user actions and determines when and how to trigger metric updates.
+The Gamification Engine is a service that tracks user progress (metrics) and unlocks achievements based only on those metrics. It does not handle events or rules—those are managed by the Gamification Layer, which listens to user actions and decides when to update metrics.
 
 ---
 
@@ -10,9 +10,9 @@ The Gamification Engine is a dedicated service that updates user metrics and eva
 
 **This component is responsible for:**
 
-- Incrementing user metrics
+- Incrementing user metrics(such as points or streaks)
 
-- Checking for and unlocking achievements when a metric is updated
+- Unlocks achievements when users reach certain metric thresholds
 
 - Handling metrics and achievement at admin & user scope.
 
@@ -22,7 +22,7 @@ _Note: Gamification Engine has no knowledge of rules and events._
 
 ### 🎯 Metrics
 
-Gamification metrics are measurable elements that form the foundation of the application's gamification system, helping to quantify and drive user engagement.
+Gamification metrics are measurable values(like points,streaks,counters) that form the foundation of the application's gamification system, helping to quantify and drive user engagement.
 
 #### What they do?
 
@@ -30,9 +30,9 @@ Gamification metrics are measurable elements that form the foundation of the app
 
 - Defined by Admins
 
-- Is lazy initialized to every user.
+- Created for each user as needed (lazy initialization)
 
-- Can be triggered directly with metric trigger.
+- Can be updated directly with metric trigger.
 
 ### 🏅 Achievements
 

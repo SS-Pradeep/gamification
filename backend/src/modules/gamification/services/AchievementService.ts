@@ -6,7 +6,10 @@ import {
   IGamifyEngineRepository,
 } from '#root/shared/index.js';
 import {GLOBAL_TYPES} from '#root/types.js';
-import {MetricAchievement} from '#gamification/classes/index.js';
+import {
+  MetricAchievement,
+  UpdateMetricAchievement,
+} from '#gamification/classes/index.js';
 import {plainToClass, plainToInstance} from 'class-transformer';
 import {ObjectId} from 'mongodb';
 
@@ -45,8 +48,11 @@ export class achievementService extends BaseService {
       // Check if MetricId is valid
       const isValidMetricId = await this.gamifyEngineRepo.readGameMetric(
         achievement.metricId,
+        false,
         session,
       );
+
+      console.log('isValidMetricId', isValidMetricId, achievement.metricId);
 
       if (!isValidMetricId) {
         throw new NotFoundError(
@@ -88,12 +94,23 @@ export class achievementService extends BaseService {
    */
   getAchievementById(id: string): Promise<MetricAchievement> {
     return this._withTransaction(async session => {
-      const achievementId = new ObjectId(id);
+      let achievement;
 
-      const achievement = await this.gamifyEngineRepo.readAchievement(
-        achievementId,
-        session,
-      );
+      if (ObjectId.isValid(id)) {
+        const achievementId = new ObjectId(id);
+
+        achievement = await this.gamifyEngineRepo.readAchievement(
+          achievementId,
+          false,
+          session,
+        );
+      } else {
+        achievement = await this.gamifyEngineRepo.readAchievement(
+          id,
+          true,
+          session,
+        );
+      }
 
       if (!achievement) {
         throw new NotFoundError(`Achievement with ID ${id} not found`);
@@ -112,17 +129,22 @@ export class achievementService extends BaseService {
    */
   updateAchievement(
     id: string,
-    achievement: MetricAchievement,
+    achievement: UpdateMetricAchievement,
   ): Promise<boolean> {
     return this._withTransaction(async session => {
-      const achievementId = new ObjectId(id);
-      const updatePayload = {...achievement, _id: achievementId};
-      achievement = plainToInstance(MetricAchievement, updatePayload);
+      achievement = plainToInstance(UpdateMetricAchievement, achievement, {
+        excludeExtraneousValues: true,
+      });
 
-      // Fetch the existing achievement and check it's status
+      let existingAchievement, updateResult;
 
-      const existingAchievement = await this.gamifyEngineRepo.readAchievement(
+      const isSlug = !ObjectId.isValid(id);
+
+      const achievementId = isSlug ? id : new ObjectId(id);
+
+      existingAchievement = await this.gamifyEngineRepo.readAchievement(
         achievementId,
+        isSlug,
         session,
       );
 
@@ -134,7 +156,8 @@ export class achievementService extends BaseService {
 
       // Validate that the referenced metric exists
       const isValidMetricId = await this.gamifyEngineRepo.readGameMetric(
-        achievement.metricId,
+        achievementId,
+        isSlug,
         session,
       );
 
@@ -144,16 +167,15 @@ export class achievementService extends BaseService {
         );
       }
 
-      const updateResult = await this.gamifyEngineRepo.updateAchievement(
+      updateResult = await this.gamifyEngineRepo.updateAchievement(
         achievementId,
         achievement,
+        isSlug,
         session,
       );
 
       if (updateResult.matchedCount === 0) {
-        throw new NotFoundError(
-          `Achievement with ID ${achievementId} not found`,
-        );
+        throw new NotFoundError(`Achievement with ID ${id} not found`);
       }
 
       return updateResult.acknowledged && updateResult.modifiedCount > 0;
@@ -167,12 +189,21 @@ export class achievementService extends BaseService {
    */
   deleteAchievement(id: string): Promise<boolean> {
     return this._withTransaction(async session => {
-      const achievementId = new ObjectId(id);
-
-      const deleteResult = await this.gamifyEngineRepo.deleteAchievement(
-        achievementId,
-        session,
-      );
+      let deleteResult;
+      if (!ObjectId.isValid(id)) {
+        deleteResult = await this.gamifyEngineRepo.deleteAchievement(
+          id,
+          true,
+          session,
+        );
+      } else {
+        const achievementId = new ObjectId(id);
+        deleteResult = await this.gamifyEngineRepo.deleteAchievement(
+          achievementId,
+          false,
+          session,
+        );
+      }
 
       if (deleteResult.modifiedCount === 0) {
         throw new NotFoundError(`Achievement with ID ${id} not found`);

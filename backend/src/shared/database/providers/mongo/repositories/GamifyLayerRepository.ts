@@ -9,7 +9,12 @@ import {
 } from 'mongodb';
 
 import {IGamifyLayerRepository, MongoDatabase} from '#shared/database/index.js';
-import {IEvents, IRule} from '#root/shared/interfaces/models.js';
+import {
+  ICurrency,
+  IEvents,
+  IRule,
+  IUpdateCurrency,
+} from '#root/shared/interfaces/models.js';
 import {GLOBAL_TYPES} from '#root/types.js';
 import {Events, Rule} from '#gamification/classes/transformers/index.js';
 
@@ -18,6 +23,7 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
   // Collection references
   private eventsCollection: Collection<Events>;
   private rulesCollection: Collection<Rule>;
+  private currencyCollection: Collection<ICurrency>;
 
   constructor(
     @inject(GLOBAL_TYPES.Database)
@@ -30,6 +36,9 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
     if (!this.initialized) {
       this.eventsCollection = await this.db.getCollection<Events>('events');
       this.rulesCollection = await this.db.getCollection<Rule>('rules');
+      this.currencyCollection = await this.db.getCollection<ICurrency>(
+        'currency',
+      );
 
       // Create indexes for better performance
       try {
@@ -37,6 +46,36 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
         await this.rulesCollection.createIndex(
           {eventId: 1},
           {name: 'eventId_rules', background: true},
+        );
+
+        // add composite index for slug and scope with unique constraint on events collection
+
+        await this.eventsCollection.createIndex(
+          {slug: 1, scope: 1},
+          {
+            name: 'slug_scope_events',
+            unique: true,
+            background: true,
+            partialFilterExpression: {
+              slug: {$exists: true},
+              scope: {$exists: true},
+            },
+          },
+        );
+
+        // add composite index for slug and scope with unique constraint on rules collection
+
+        await this.rulesCollection.createIndex(
+          {slug: 1, scope: 1},
+          {
+            name: 'slug_scope_rules',
+            unique: true,
+            background: true,
+            partialFilterExpression: {
+              slug: {$exists: true},
+              scope: {$exists: true},
+            },
+          },
         );
 
         console.log('GamifyLayerRepository indexes created successfully');
@@ -79,15 +118,16 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
     return events.length > 0 ? events : null;
   }
   async readEvent(
-    eventId: ObjectId,
+    eventId: ObjectId | string,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<IEvents | null> {
     await this.init();
 
-    const event = await this.eventsCollection.findOne(
-      {_id: eventId},
-      {session},
-    );
+    const event =
+      isSlug && typeof eventId === 'string'
+        ? await this.eventsCollection.findOne({slug: eventId}, {session})
+        : await this.eventsCollection.findOne({_id: eventId}, {session});
 
     if (!event) {
       return null;
@@ -96,31 +136,40 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
   }
 
   async updateEvent(
-    eventId: ObjectId,
+    eventId: ObjectId | string,
+    isSlug: boolean,
     event: Partial<IEvents>,
     session?: ClientSession,
   ): Promise<UpdateResult | null> {
     await this.init();
 
-    const result = await this.eventsCollection.updateOne(
-      {_id: eventId},
-      {$set: event},
-      {session},
-    );
+    const result =
+      isSlug && typeof eventId === 'string'
+        ? await this.eventsCollection.updateOne(
+            {slug: eventId},
+            {$set: event},
+            {session},
+          )
+        : await this.eventsCollection.updateOne(
+            {_id: eventId},
+            {$set: event},
+            {session},
+          );
 
     return result;
   }
 
   async deleteEvent(
     eventId: ObjectId,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null> {
     await this.init();
 
-    const result = await this.eventsCollection.deleteOne(
-      {_id: eventId},
-      {session},
-    );
+    const result =
+      isSlug && typeof eventId === 'string'
+        ? await this.eventsCollection.deleteOne({slug: eventId}, {session})
+        : await this.eventsCollection.deleteOne({_id: eventId}, {session});
 
     return result;
   }
@@ -158,52 +207,152 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
 
   async readRule(
     ruleId: ObjectId,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<IRule | null> {
     await this.init();
 
-    const rule = await this.rulesCollection.findOne({_id: ruleId}, {session});
+    const rule =
+      isSlug && typeof ruleId === 'string'
+        ? await this.rulesCollection.findOne({slug: ruleId}, {session})
+        : await this.rulesCollection.findOne({_id: ruleId}, {session});
 
     return rule;
   }
 
   async updateRule(
     ruleId: ObjectId,
+    isSlug: boolean,
     rule: IRule,
     session?: ClientSession,
   ): Promise<UpdateResult | null> {
     await this.init();
 
-    const result = await this.rulesCollection.updateOne(
-      {_id: ruleId},
-      {$set: rule},
-      {session},
-    );
+    const result =
+      isSlug && typeof ruleId === 'string'
+        ? await this.rulesCollection.updateOne(
+            {slug: ruleId},
+            {$set: rule},
+            {session},
+          )
+        : await this.rulesCollection.updateOne(
+            {_id: ruleId},
+            {$set: rule},
+            {session},
+          );
 
     return result;
   }
 
   async deleteRule(
     ruleId: ObjectId,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null> {
     await this.init();
 
-    const result = await this.rulesCollection.deleteOne(
-      {_id: ruleId},
-      {session},
-    );
+    const result =
+      isSlug && typeof ruleId === 'string'
+        ? await this.rulesCollection.deleteOne({slug: ruleId}, {session})
+        : await this.rulesCollection.deleteOne({_id: ruleId}, {session});
 
     return result;
   }
 
   async deleteRulesByEventId(
     eventId: ObjectId,
+    isSlug: boolean,
     session?: ClientSession,
   ): Promise<DeleteResult | null> {
     await this.init();
 
-    const result = await this.rulesCollection.deleteMany({eventId}, {session});
+    const result =
+      isSlug && typeof eventId === 'string'
+        ? await this.rulesCollection.deleteMany({slug: eventId}, {session})
+        : await this.rulesCollection.deleteMany({_id: eventId}, {session});
+
+    return result;
+  }
+
+  async createCurrency(
+    currency: ICurrency,
+    session?: ClientSession,
+  ): Promise<ICurrency | null> {
+    await this.init();
+
+    const result = await this.currencyCollection.insertOne(currency, {session});
+
+    if (result.acknowledged) {
+      const createdCurrency = await this.currencyCollection.findOne(
+        {_id: result.insertedId},
+        {session},
+      );
+
+      return createdCurrency;
+    }
+    return null;
+  }
+
+  async updateCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
+    currency: IUpdateCurrency,
+    session?: ClientSession,
+  ): Promise<UpdateResult | null> {
+    await this.init();
+
+    const result =
+      isSlug && typeof currencyId === 'string'
+        ? await this.currencyCollection.updateOne(
+            {slug: currencyId},
+            {$set: currency},
+            {session},
+          )
+        : await this.currencyCollection.updateOne(
+            {_id: currencyId},
+            {$set: currency},
+            {session},
+          );
+
+    return result;
+  }
+
+  async readCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
+    session?: ClientSession,
+  ): Promise<ICurrency | null> {
+    await this.init();
+
+    const currency =
+      isSlug && typeof currencyId === 'string'
+        ? await this.currencyCollection.findOne({slug: currencyId}, {session})
+        : await this.currencyCollection.findOne({_id: currencyId}, {session});
+
+    return currency;
+  }
+  async readAllCurrencies(
+    session?: ClientSession,
+  ): Promise<ICurrency[] | null> {
+    await this.init();
+
+    const currencies = await this.currencyCollection
+      .find({}, {session})
+      .toArray();
+
+    return currencies.length > 0 ? currencies : null;
+  }
+  async deleteCurrency(
+    currencyId: ObjectId | string,
+    isSlug: boolean,
+    session?: ClientSession,
+  ): Promise<DeleteResult | null> {
+    await this.init();
+
+    const result =
+      isSlug && typeof currencyId === 'string'
+        ? await this.currencyCollection.deleteOne({slug: currencyId}, {session})
+        : await this.currencyCollection.deleteOne({_id: currencyId}, {session});
 
     return result;
   }
