@@ -12,7 +12,7 @@ import {GAMIFICATION_TYPES, QUIZZES_TYPES} from '#gamification/types.js';
 import {ScoringWeightsRepository} from '#shared/database/providers/mongo/repositories/WeightsRepository.js';
 import {BaseService} from '#root/shared/classes/BaseService.js';
 import {MongoDatabase} from '#shared/database/providers/mongo/MongoDatabase.js';
-import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
+// import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
 import {userGameMetricsService} from './UserGameMetricsService.js';
 import {UserGameMetric} from '#gamification/classes/index.js';
 import {NotFoundError, InternalServerError} from 'routing-controllers';
@@ -31,8 +31,8 @@ export class ScoringService extends BaseService {
   constructor(
     @inject(GAMIFICATION_TYPES.WeightsRepo)
     private weightsRepo: ScoringWeightsRepository,
-    @inject(QUIZZES_TYPES.SubmissionRepo)
-    private submissionRepo: SubmissionRepository,
+    /*@inject(QUIZZES_TYPES.SubmissionRepo)
+    private submissionRepo: SubmissionRepository,*/
     @inject(GAMIFICATION_TYPES.UserGameMetricsService)
     private userGameMetricsService: userGameMetricsService,
     @inject(GLOBAL_TYPES.Database)
@@ -50,12 +50,14 @@ export class ScoringService extends BaseService {
     userId: string,
     attemptId: string,
   ): Promise<number> {
-    const submission = await this.submissionRepo.get(quizId, userId, attemptId);
+    /*const submission = await this.submissionRepo.get(quizId, userId, attemptId);
 
     if (!submission?.gradingResult?.totalScore) {
       throw new NotFoundError('Submission not found or not graded yet');
     }
-    return submission.gradingResult.totalScore;
+    return submission.gradingResult.totalScore;*/
+
+    return 10; // Placeholder value, replace with actual logic to fetch base points
   }
 
   public async calculateScore(

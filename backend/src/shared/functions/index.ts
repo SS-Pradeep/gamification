@@ -1,1 +1,1 @@
-export * from './authorizationChecker.js';
+export * from './generateOpenApiSpec.js';

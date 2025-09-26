@@ -18,9 +18,6 @@ import {authContainerModule} from '#root/modules/auth/container.js';
 import {authModuleOptions} from '#root/modules/auth/index.js';
 import {InversifyAdapter} from '#root/inversify-adapter.js';
 import {FirebaseAuthService} from '#root/modules/auth/services/FirebaseAuthService.js';
-import {coursesContainerModule} from '#root/modules/courses/container.js';
-import {notificationsContainerModule} from '#root/modules/notifications/container.js';
-import {title} from 'process';
 
 describe('GamifyLayerController', () => {
   const appInstance = Express();
@@ -39,8 +36,6 @@ describe('GamifyLayerController', () => {
       GamificationContainerModule,
       usersContainerModule,
       authContainerModule,
-      coursesContainerModule,
-      notificationsContainerModule,
     );
 
     const inversifyAdapter = new InversifyAdapter(container);

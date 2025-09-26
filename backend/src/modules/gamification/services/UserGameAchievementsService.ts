@@ -5,7 +5,6 @@ import {
   BaseService,
   MongoDatabase,
   IGamifyEngineRepository,
-  IUserRepository,
 } from '#root/shared/index.js';
 import {UserGameAchievement} from '#gamification/classes/index.js';
 import {plainToInstance} from 'class-transformer';

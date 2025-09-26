@@ -3,11 +3,6 @@ import {env} from '#root/utils/env.js';
 // src/constants/AppModule.ts (or a shared constants directory)
 
 export enum AppModule {
-  All = 'all',
-  Auth = 'auth',
-  Users = 'users',
-  Courses = 'courses',
-  Quizzes = 'quizzes',
   Gamification = 'gamification',
 }
 
@@ -25,5 +20,5 @@ export const appConfig = {
     privateKey: env('FIREBASE_PRIVATE_KEY')?.replace(/\\n/g, '\n') || undefined,
     projectId: env('FIREBASE_PROJECT_ID') || undefined,
     apiKey: env('FIREBASE_API_KEY') || undefined,
-  }
+  },
 };

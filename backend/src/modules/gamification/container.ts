@@ -10,7 +10,7 @@ import {
   ruleService,
   ScoringService,
 } from './services/index.js';
-import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
+// import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
 import {ScoringWeightsRepository} from '#root/shared/index.js';
 import {
   MetricController,
@@ -52,10 +52,10 @@ export const GamificationContainerModule = new ContainerModule(options => {
 
   // Repositories
 
-  options
+  /*options
     .bind(QUIZZES_TYPES.SubmissionRepo)
     .to(SubmissionRepository)
-    .inSingletonScope();
+    .inSingletonScope();*/
 
   options
     .bind(GAMIFICATION_TYPES.WeightsRepo)

@@ -1,6 +1,5 @@
 import {sharedContainerModule} from '#root/container.js';
 import {Container, ContainerModule} from 'inversify';
-import {authContainerModule} from '../auth/container.js';
 import {GamificationContainerModule} from './container.js';
 import {InversifyAdapter} from '#root/inversify-adapter.js';
 import {useContainer} from 'class-validator';
@@ -27,7 +26,6 @@ export const gamificationModuleControllers: Function[] = [
 export const gamificationContainerModules: ContainerModule[] = [
   GamificationContainerModule,
   sharedContainerModule,
-  authContainerModule,
 ];
 
 export function setupGamificationContainer() {

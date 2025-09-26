@@ -1,24 +1,20 @@
 {
-	"name": "vibe",
-	"version": "0.1.0",
-	"private": true,
-	"license": "MIT",
-	"author": "adityabmv",
-	"devDependencies": {
-		"husky": "^9.1.7",
-		"lint-staged": "^15.5.0"
-	},
-	"scripts": {
-		"prepare": "husky",
-		"binaries": "pnpx ts-node scripts/preload-mongo-binary.ts",
-		"vibe": "pnpx ts-node cli/src/cli.ts"
-	},
-	"lint-staged": {
-		"backend/**/*.{js,jsx,ts,tsx}": [
-			"pnpm --filter backend lint"
-		]
-	},
-	"dependencies": {
-		"vibe": "link:cli"
-	}
+  "name": "gamification-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "adityabmv, jeyadevan",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "binaries": "pnpx ts-node scripts/preload-mongo-binary.ts"
+  },
+  "lint-staged": {
+    "backend/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter backend lint"
+    ]
+  }
 }
