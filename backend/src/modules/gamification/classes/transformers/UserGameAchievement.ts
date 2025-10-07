@@ -84,6 +84,19 @@ export class UserGameAchievement implements IUserGameAchievement {
   })
   achievements: IAchievement[];
 
+  // Array of completed goal IDs associated with the user's achievements
+  @Expose()
+  @JSONSchema({
+    title: 'Completed Goal IDs',
+    description:
+      'List of Goal IDs that the user has completed associated with their achievements',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
+  })
+  @Transform(achievementArrayTransformer.toPlainOnly, {toPlainOnly: true})
+  @Transform(achievementArrayTransformer.toClassOnly, {toClassOnly: true})
+  completedGoalIds: ID[];
+
   /**
    * Constructor - creates a new UserGameAchievement instance
    * @param body - Optional data to populate the user achievements
@@ -92,6 +105,7 @@ export class UserGameAchievement implements IUserGameAchievement {
     if (body) {
       this.userId = body.userId;
       this.achievements = body.achievements || [];
+      this.completedGoalIds = [];
     }
   }
 }

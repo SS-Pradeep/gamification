@@ -13,6 +13,7 @@ import {
   TriggerController,
   RuleController,
 } from './controllers/index.js';
+import {GoalController} from './controllers/GoalController.js';
 
 export const gamificationModuleControllers: Function[] = [
   MetricController,
@@ -21,6 +22,7 @@ export const gamificationModuleControllers: Function[] = [
   EventController,
   ScoreController,
   RuleController,
+  GoalController,
 ];
 
 export const gamificationContainerModules: ContainerModule[] = [

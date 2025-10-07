@@ -46,17 +46,24 @@ export class achievementService extends BaseService {
       ) as MetricAchievement;
 
       // Check if MetricId is valid
-      const isValidMetricId = await this.gamifyEngineRepo.readGameMetric(
+      /*const isValidMetricId = await this.gamifyEngineRepo.readGameMetric(
         achievement.metricId,
+        false,
+        session,
+      );*/
+
+      // Check if GoalId is valid
+      const isValidGoalId = await this.gamifyEngineRepo.readGoal(
+        achievement.goalId,
         false,
         session,
       );
 
-      console.log('isValidMetricId', isValidMetricId, achievement.metricId);
+      console.log('isValidGoalId', isValidGoalId, achievement.goalId);
 
-      if (!isValidMetricId) {
+      if (!isValidGoalId) {
         throw new NotFoundError(
-          `Game metric with ID ${achievement.metricId} not found`,
+          `Game goal with ID ${achievement.goalId} not found`,
         );
       }
 
@@ -163,7 +170,7 @@ export class achievementService extends BaseService {
 
       if (!isValidMetricId) {
         throw new NotFoundError(
-          `Game metric with ID ${achievement.metricId} not found`,
+          `Game metric with goal ID ${achievement.goalId} not found`,
         );
       }
 

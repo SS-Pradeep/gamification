@@ -9,6 +9,7 @@ const GAMIFICATION_TYPES = {
   MetricTriggerService: Symbol.for('MetricTriggerService'),
   EventService: Symbol.for('EventService'),
   RuleService: Symbol.for('RuleService'),
+  GoalService: Symbol.for('GoalService'),
 
   // Repositories
   GamifyEngineRepository: Symbol.for('GamifyEngineRepository'),

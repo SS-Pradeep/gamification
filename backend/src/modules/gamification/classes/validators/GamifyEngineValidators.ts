@@ -15,9 +15,12 @@ import {
   AchievementStatus,
   GameMetricType,
   IAchievement,
+  ID,
   IGameMetric,
+  IGoals,
   IMetricAchievement,
   IUpdateGameMetric,
+  IUpdateGoals,
   IUpdateMetricAchievement,
   IUserGameAchievement,
   IUserGameMetric,
@@ -306,27 +309,16 @@ export class CreateMetricAchievementBody implements IMetricAchievement {
   @IsNotEmpty()
   trigger: Trigger;
 
-  // ID of the metric this achievement tracks
+  // List of Goal IDs associated with this achievement
   @JSONSchema({
-    title: 'Metric ID',
-    description: 'The ID of the metric associated with the achievement',
-    example: '68593511b809b47d9b389262',
-    type: 'string',
+    title: 'Goal IDs',
+    description:
+      'List of Goal IDs associated with this achievement for tracking progress',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
   })
-  @IsMongoId()
-  @IsNotEmpty()
-  metricId: string;
-
-  // Threshold value needed to unlock this achievement
-  @JSONSchema({
-    title: 'Achievement Value',
-    description: 'The value required to trigger the achievement',
-    example: 1000,
-    type: 'number',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  metricCount: number;
+  @IsArray()
+  goalIds: ID[];
 
   // Status of the achievement (active or inactive)
   @JSONSchema({
@@ -457,27 +449,15 @@ export class UpdateMetricAchievementBody implements IUpdateMetricAchievement {
   @IsNotEmpty()
   trigger: Trigger;
 
-  // Updated metric ID
+  // Updated goal IDs
   @JSONSchema({
-    title: 'Metric ID',
-    description: 'The ID of the metric associated with the achievement',
-    example: '68593511b809b47d9b389262',
-    type: 'string',
+    title: 'Goal Ids',
+    description: 'The IDs of the goals associated with the achievement',
+    example: ['68593511b809b47d9b389262'],
+    type: 'array',
   })
-  @IsMongoId()
-  @IsNotEmpty()
-  metricId: string;
-
-  // Updated threshold value
-  @JSONSchema({
-    title: 'Achievement Value',
-    description: 'The value required to trigger the achievement',
-    example: 1000,
-    type: 'number',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  metricCount: number;
+  @IsArray()
+  goalIds: string[];
 
   // Updated status of the achievement
   @JSONSchema({
@@ -826,4 +806,183 @@ export class MetricTriggerValidator {
   @ValidateNested({each: true})
   @Type(() => MetricTriggerItemValidator)
   metrics: MetricTriggerItemValidator[];
+}
+
+/**
+ * Validator for creating Goals
+ */
+
+export class CreateGoalsBody implements IGoals {
+  // Name of the Goal
+  @JSONSchema({
+    title: 'Goal Name',
+    description: 'Name for the Goal',
+    example: 'Daily Steps',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  Name: string;
+
+  // Description of the Goal
+  @JSONSchema({
+    title: 'Goal Description',
+    description: 'Description of the Goal',
+    example: 'Achieve 10,000 steps daily',
+    type: 'string',
+  })
+  @IsString()
+  Description: string;
+
+  // Type of trigger (e.g., metric, streak)
+  @JSONSchema({
+    title: 'Goal Trigger Type',
+    description: 'Trigger type for the Goal, e.g; metric or streak',
+    example: 'metric',
+    type: 'string',
+    enum: [Trigger.METRIC, Trigger.STREAK],
+  })
+  @IsNotEmpty()
+  @IsEnum(Trigger)
+  triggerType: Trigger;
+
+  // Value needed to achieve the Goal
+  @JSONSchema({
+    title: 'Goal Value',
+    description: 'The value required to achieve the Goal',
+    example: 10000,
+    type: 'number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  value: number;
+
+  // ID of the metric associated with the Goal
+  @JSONSchema({
+    title: 'Metric ID',
+    description: 'The ID of the metric associated with the Goal',
+    example: '68593511b809b47d9b389262',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsMongoId()
+  metricId: string;
+
+  // Slug for the Goal (URL-friendly identifier)
+  @JSONSchema({
+    title: 'Slug',
+    description: 'A URL-friendly identifier for the Goal',
+    example: 'daily-steps',
+    type: 'string',
+  })
+  @IsString()
+  slug: string;
+
+  // Scope of the Goal (e.g., "user", "global")
+  @JSONSchema({
+    title: 'Scope',
+    description: 'The scope of the Goal, e.g; "user", "global"',
+    example: 'user',
+    type: 'string',
+  })
+  @IsString()
+  scope: string;
+
+  @JSONSchema({
+    title: 'Achievement IDs',
+    description:
+      'List of Achievement IDs associated with this Goal for tracking progress',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
+  })
+  @IsArray()
+  achievementIds: ID[];
+}
+
+export class GoalsParams {
+  // MongoDB ID of the Goal
+  @JSONSchema({
+    title: 'Goal Id.',
+    description: 'The mongoId or slug of Goal.',
+    type: 'string',
+    example: '68593511b809b47d9b389262',
+  })
+  @IsNotEmpty()
+  @IsMongoIdOrSlug()
+  goalsId: string;
+}
+
+export class UpdateGoalsBody implements IUpdateGoals {
+  // MongoDB ID of the Goal to update
+  @JSONSchema({
+    title: 'Goal Id',
+    description: 'The mongoId of Goal.',
+    type: 'string',
+    example: '68593511b809b47d9b389262',
+  })
+  @IsNotEmpty()
+  @IsMongoIdOrSlug()
+  goalsId: string;
+
+  // Updated name for the Goal
+  @JSONSchema({
+    title: 'Goal Name',
+    description: 'Name for the Goal',
+    example: 'Daily Steps',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  Name: string;
+
+  // Updated description
+  @JSONSchema({
+    title: 'Goal Description',
+    description: 'Description of the Goal',
+    example: 'Achieve 10,000 steps daily',
+    type: 'string',
+  })
+  @IsString()
+  Description: string;
+
+  @JSONSchema({
+    title: 'Goal Trigger Type',
+    description: 'Trigger type for the Goal, e.g; metric or streak',
+    example: 'metric',
+    type: 'string',
+    enum: [Trigger.METRIC, Trigger.STREAK],
+  })
+  @IsNotEmpty()
+  @IsEnum(Trigger)
+  triggerType: Trigger;
+
+  @JSONSchema({
+    title: 'Goal Value',
+    description: 'The value required to achieve the Goal',
+    example: 10000,
+    type: 'number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  value: number;
+
+  @JSONSchema({
+    title: 'Metric ID',
+    description: 'The ID of the metric associated with the Goal',
+    example: '68593511b809b47d9b389262',
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsMongoId()
+  metricId: string;
+
+  @JSONSchema({
+    title: 'Achievement IDs',
+    description:
+      'List of Achievement IDs associated with this Goal for tracking progress',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
+  })
+  @IsArray()
+  achievementIds: ID[];
 }

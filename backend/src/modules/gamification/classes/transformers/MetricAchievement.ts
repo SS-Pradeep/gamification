@@ -75,28 +75,6 @@ export class MetricAchievement implements IMetricAchievement {
   })
   trigger: Trigger;
 
-  // Reference to the metric that this achievement tracks
-  @Expose()
-  @JSONSchema({
-    title: 'metricId',
-    description: 'MongoDB ObjectId of the metric to track for this achievement',
-    example: '60d5ec49b3f1c8e4a8f8b8c2',
-    type: 'string',
-  })
-  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
-  @Transform(StringToObjectId.transformer, {toClassOnly: true})
-  metricId: ID;
-
-  // Threshold value needed to unlock this achievement
-  @Expose()
-  @JSONSchema({
-    title: 'Metric Count',
-    description: 'The count of the metric required to achieve this Achievement',
-    example: 100,
-    type: 'number',
-  })
-  metricCount: number;
-
   // Current status of the achievement (active or inactive)
   @Expose()
   @JSONSchema({
@@ -130,6 +108,16 @@ export class MetricAchievement implements IMetricAchievement {
 
   @Expose()
   @JSONSchema({
+    title: 'Goal IDs',
+    description:
+      'List of Goal IDs associated with this achievement for tracking progress',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
+  })
+  goalIds: ID[];
+
+  @Expose()
+  @JSONSchema({
     title: 'Slug',
     description:
       'URL-friendly identifier derived from the name, used for easy referencing',
@@ -160,10 +148,7 @@ export class MetricAchievement implements IMetricAchievement {
       this.status = achievementBody?.status || AchievementStatus.ACTIVE;
       this.rewardMetricId = achievementBody?.rewardMetricId;
       this.rewardIncrementValue = achievementBody?.rewardIncrementValue;
-      this.metricId = achievementBody.metricId;
-      this.metricCount = achievementBody.metricCount;
-      this.rewardMetricId = achievementBody.rewardMetricId;
-      this.rewardIncrementValue = achievementBody.rewardIncrementValue;
+      this.goalIds = achievementBody.goalIds;
       this.slug = achievementBody.slug;
       this.scope = achievementBody.scope;
     }
@@ -215,24 +200,13 @@ export class UpdateMetricAchievement implements IUpdateMetricAchievement {
   // Reference to the metric that this achievement tracks
   @Expose()
   @JSONSchema({
-    title: 'metricId',
-    description: 'MongoDB ObjectId of the metric to track for this achievement',
-    example: '60d5ec49b3f1c8e4a8f8b8c2',
-    type: 'string',
+    title: 'Goal IDs',
+    description:
+      'List of Goal IDs associated with this achievement for tracking progress',
+    example: ['60d5ec49b3f1c8e4a8f8b8c2', '60d5ec49b3f1c8e4a8f8b8c3'],
+    type: 'array',
   })
-  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
-  @Transform(StringToObjectId.transformer, {toClassOnly: true})
-  metricId: ID;
-
-  // Threshold value needed to unlock this achievement
-  @Expose()
-  @JSONSchema({
-    title: 'Metric Count',
-    description: 'The count of the metric required to achieve this Achievement',
-    example: 100,
-    type: 'number',
-  })
-  metricCount: number;
+  goalIds: ID[];
 
   // Current status of the achievement (active or inactive)
   @Expose()
@@ -278,10 +252,7 @@ export class UpdateMetricAchievement implements IUpdateMetricAchievement {
       this.status = achievementBody?.status || AchievementStatus.ACTIVE;
       this.rewardMetricId = achievementBody?.rewardMetricId;
       this.rewardIncrementValue = achievementBody?.rewardIncrementValue;
-      this.metricId = achievementBody.metricId;
-      this.metricCount = achievementBody.metricCount;
-      this.rewardMetricId = achievementBody.rewardMetricId;
-      this.rewardIncrementValue = achievementBody.rewardIncrementValue;
+      this.goalId = achievementBody.goalId;
     }
   }
 }

@@ -473,12 +473,12 @@ export interface IUpdateMetricAchievement {
   badgeUrl: string; // URL to the badge image
   rewardMetricId: string | ObjectId; // Optional field to link achievements to specific metrics
   rewardIncrementValue: number; //Optional field to specify the increment value for the reward metric
+  goalIds: (string | ObjectId)[];
 }
 
 export interface IMetricAchievement extends IAchievementBase {
   trigger: Trigger;
-  metricId: string | ObjectId;
-  metricCount: number;
+  goalIds: (string | ObjectId)[];
 }
 
 // UserMetric interface
@@ -502,6 +502,7 @@ export interface IUserGameAchievement {
   _id?: string | ObjectId | null;
   userId: string | ObjectId;
   achievements: IAchievement[];
+  completedGoalIds: (string | ObjectId)[];
 }
 
 // Metrics array interface
@@ -577,4 +578,30 @@ export interface IUpdateCurrency {
   icon: string;
   exchangeValue: number; // Value in its own currency
   isBaseCurrency: boolean; // Indicates if this is the base currency
+}
+
+export interface IGoals extends MetaDataMixin {
+  _id?: string | ObjectId | null;
+  Name: string;
+  Description: string;
+  triggerType: Trigger;
+  value: number;
+  metricId: string | ObjectId;
+  achievementIds: (string | ObjectId)[];
+}
+
+export interface IUpdateGoals {
+  Name: string;
+  Description: string;
+  triggerType: Trigger;
+  value: number;
+  metricId: string | ObjectId;
+  achievementIds: (string | ObjectId)[];
+}
+
+export interface IUserAchievementProgress {
+  _id?: string | ObjectId | null;
+  userId: string | ObjectId;
+  achievementId: string | ObjectId;
+  pendingGoalIds: (string | ObjectId)[];
 }

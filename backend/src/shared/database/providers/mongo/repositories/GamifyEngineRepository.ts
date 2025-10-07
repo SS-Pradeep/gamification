@@ -27,6 +27,8 @@ import {
   StreakResolutionType,
   ID,
   IUpdateGameMetric,
+  IGoals,
+  IUserAchievementProgress,
 } from '#root/shared/interfaces/models.js';
 
 /**
@@ -41,6 +43,8 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
   private achievementCollection: Collection<MetricAchievement>;
   private userMetricCollection: Collection<UserGameMetric>;
   private userAchievementCollection: Collection<UserGameAchievement>;
+  private goalsCollection: Collection<IGoals>;
+  private userAchievementProgressCollection: Collection<IUserAchievementProgress>;
 
   constructor(@inject(GLOBAL_TYPES.Database) private db: MongoDatabase) {}
 
@@ -60,6 +64,13 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       this.userAchievementCollection =
         await this.db.getCollection<UserGameAchievement>(
           'userGameAchievements',
+        );
+
+      this.goalsCollection = await this.db.getCollection<IGoals>('goals');
+
+      this.userAchievementProgressCollection =
+        await this.db.getCollection<IUserAchievementProgress>(
+          'userAchievementProgress',
         );
 
       try {
@@ -693,6 +704,94 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
     );
   }
 
+  async createGoals(
+    goals: IGoals,
+    session?: ClientSession,
+  ): Promise<IGoals | null> {
+    await this.init();
+
+    const result = await this.goalsCollection.insertOne(goals, {session});
+
+    if (result.acknowledged && result.insertedId) {
+      const createdGoals = await this.goalsCollection.findOne(
+        {_id: result.insertedId},
+        {session},
+      );
+      return createdGoals;
+    }
+
+    return null;
+  }
+
+  async readGoal(
+    goalsId: string | ObjectId,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<IGoals | null> {
+    await this.init();
+
+    const goals =
+      bySlug && typeof goalsId === 'string'
+        ? await this.goalsCollection.findOne({slug: goalsId}, {session})
+        : await this.goalsCollection.findOne({_id: goalsId}, {session});
+
+    return goals;
+  }
+
+  async readAllGoals(session?: ClientSession): Promise<IGoals[] | null> {
+    await this.init();
+
+    const goals = await this.goalsCollection.find({}, {session}).toArray();
+    return goals.length > 0 ? goals : null;
+  }
+
+  async updateGoals(
+    goalsId: string | ObjectId,
+    goals: Partial<IGoals>,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<UpdateResult | null> {
+    await this.init();
+
+    const result =
+      bySlug && typeof goalsId === 'string'
+        ? await this.goalsCollection.updateOne(
+            {slug: goalsId},
+            {$set: goals},
+            {session},
+          )
+        : await this.goalsCollection.updateOne(
+            {_id: goalsId},
+            {$set: goals},
+            {session},
+          );
+
+    if (result.acknowledged) {
+      return result;
+    }
+
+    return null;
+  }
+
+  async deleteGoals(
+    goalsId: string | ObjectId,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<DeleteResult | null> {
+    await this.init();
+
+    const result =
+      bySlug && typeof goalsId === 'string'
+        ? await this.goalsCollection.deleteOne({slug: goalsId}, {session})
+        : await this.goalsCollection.deleteOne({_id: goalsId}, {session});
+
+    if (result.acknowledged) {
+      return result;
+    }
+
+    return null;
+  }
+
   // Core gamification logic: update metrics and unlock achievements
   async metricTrigger(
     metricTriggers: IMetricTrigger,
@@ -836,24 +935,34 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       return null;
     }
 
-    // Feat: Add filter for streak and non-streak achievements.
+    // Build the aggregate to fetch goals that are reached.
+    // Use the goalIds to unlock achievements.
 
     const aggregateCondition = metricsUpdated.map(metric => ({
       $and: [
         {metricId: metric.metricId},
-        {status: AchievementStatus.ACTIVE},
-        {$expr: {$lte: ['$metricCount', metric.value]}},
+        {$expr: {$lte: ['$value', metric.value]}},
       ],
     }));
 
     const condition = [{$match: {$or: aggregateCondition}}];
 
-    const achievementsUnlocked = await this.achievementCollection
+    const goalsReached = await this.goalsCollection
       .aggregate(condition, {session})
       .toArray();
 
+    const goalIds = goalsReached.map(goal => goal._id);
+
+    if (goalIds.length === 0) {
+      return {
+        metricsUpdated: metricsUpdated,
+        achievementsUnlocked: [],
+      };
+    }
+
     // Step 5: Update the user achievements with the unlocked achievements.
-    const achievementIds = achievementsUnlocked.map(ach => ({
+    /*
+    const achievementIds = goalsReached.map(ach => ({
       achievementId: ach._id,
       unlockedAt: new Date(),
     }));
@@ -900,5 +1009,92 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       metricsUpdated: metricsUpdated,
       achievementsUnlocked: achievementsUpdated,
     };
+    */
+
+    // Important change: We should maintain a reverse lookup of goal to achievements.
+    // during trigger, fetch achievements from the reverse lookup rather than scanning all achievements.
+    // also, maintain a per user per achievement unlock log.
+    // when the goals in per user per acheivement log is 0 for an achievement, it means the achievement is unlocked.
+
+    // Step 5: Fetch achievements linked to the reached goals.
+
+    const achievementsUnlockable = goalsReached
+      .map(goal => goal.achievementIds)
+      .flat();
+
+    if (achievementsUnlockable.length === 0) {
+      return {
+        metricsUpdated: metricsUpdated,
+        achievementsUnlocked: [],
+      };
+    }
+
+    // Filter inactive achievements.
+
+    let achievements = await this.achievementCollection
+      .find(
+        {
+          _id: {$in: achievementsUnlockable},
+          status: AchievementStatus.ACTIVE,
+        },
+        {session},
+      )
+      .toArray();
+
+    // We now have the list of achievements that can be unlocked based on the goals reached.
+    // There are 3 scenarios here:
+    // 1. User started a progress on an achievement but not completed it.
+    // 2. User has not started any progress on an achievement.
+    // 3. User has already unlocked the achievement.
+
+    // We need to handle each scenario differently.
+    // By removing already unlocked achievements from the list, we can handle scenarios 1 and 2 together.
+
+    const userAchivements = await this.userAchievementCollection.findOne(
+      {userId: metricTriggers.userId},
+      {session},
+    );
+
+    // Filter out already unlocked achievements.
+
+    if (userAchivements && userAchivements.achievements.length > 0) {
+      const unlockedAchievementIds = userAchivements.achievements.map(ua =>
+        ua.achievementId.toString(),
+      );
+      achievements = achievements.filter(
+        ach => !unlockedAchievementIds.includes(ach._id.toString()),
+      );
+    }
+
+    if (achievements.length === 0) {
+      return {
+        metricsUpdated: metricsUpdated,
+        achievementsUnlocked: [],
+      };
+    }
+
+    // Now, achievements array contains only those achievements that can be unlocked.
+    // We need to handle scenarios 1 and 2 here.
+    // We need to update the progress for scenario 1 and add new progress for scenario 2.
+    // If the progress pendingGoalIds becomes [], the achievement is unlocked.
+    // Use a pipeline update to handle this.
+
+    const achievementBulkOps = achievements.map(ach => {
+      return {
+        updateOne: {
+          filter: {userId: metricTriggers.userId, achievementId: ach._id},
+          update: [
+            {
+              $set: {
+                pendingGoalIds: {
+                  $setDifference: ['$pendingGoalIds', goalIds],
+                },
+              },
+            },
+          ],
+          upsert: true,
+        },
+      };
+    });
   }
 }

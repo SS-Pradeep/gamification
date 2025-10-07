@@ -159,8 +159,8 @@ export class eventService extends BaseService {
       const eventKeys = Object.keys(event.eventPayload || {});
       const payloadKeys = Object.keys(eventPayload || {});
 
-      const eventValues = Object.values(event.eventPayload || {});
-      const payloadValues = Object.values(eventPayload || {});
+      // const eventValues = Object.values(event.eventPayload || {});
+      // const payloadValues = Object.values(eventPayload || {});
 
       const isKeysValid = payloadKeys.every(key => eventKeys.includes(key));
 

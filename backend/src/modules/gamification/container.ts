@@ -9,6 +9,7 @@ import {
   eventService,
   ruleService,
   ScoringService,
+  GoalService,
 } from './services/index.js';
 // import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
 import {ScoringWeightsRepository} from '#root/shared/index.js';
@@ -20,6 +21,7 @@ import {
   RuleController,
   TriggerController,
 } from './controllers/index.js';
+import {GoalController} from './controllers/GoalController.js';
 export const GamificationContainerModule = new ContainerModule(options => {
   // Service
   options.bind(GAMIFICATION_TYPES.MetricService).to(metricService);
@@ -39,6 +41,10 @@ export const GamificationContainerModule = new ContainerModule(options => {
     .bind(GAMIFICATION_TYPES.ScoringService)
     .to(ScoringService)
     .inSingletonScope();
+  options
+    .bind(GAMIFICATION_TYPES.GoalService)
+    .to(GoalService)
+    .inSingletonScope();
 
   // controllers
   // options.bind(GamifyEngineController).toSelf().inSingletonScope();
@@ -49,6 +55,7 @@ export const GamificationContainerModule = new ContainerModule(options => {
   options.bind(EventController).toSelf().inSingletonScope();
   options.bind(RuleController).toSelf().inSingletonScope();
   options.bind(TriggerController).toSelf().inSingletonScope();
+  options.bind(GoalController).toSelf().inSingletonScope();
 
   // Repositories
 

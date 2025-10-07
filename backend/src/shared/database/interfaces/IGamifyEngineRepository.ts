@@ -11,7 +11,9 @@ import {
   IUserGameMetric,
   IUserGameAchievement,
   IMetricTrigger,
+  IGoals,
 } from '../../interfaces/models.js';
+import {Client} from 'express-rate-limit';
 
 /**
  * Interface for gamification engine repository.
@@ -166,4 +168,33 @@ export interface IGamifyEngineRepository {
     metricsUpdated: IUserGameMetric[];
     achievementsUnlocked: Document[];
   }>;
+
+  // Create Goals
+
+  createGoals(goals: IGoals, session?: ClientSession): Promise<IGoals | null>;
+
+  // Get a Goals by its ID
+  readGoal(
+    goalsId: string | ObjectId,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<IGoals | null>;
+
+  // Get all Goals
+  readAllGoals(session?: ClientSession): Promise<IGoals[] | null>;
+
+  // Update a Goals by its ID
+  updateGoals(
+    goalsId: string | ObjectId,
+    goals: Partial<IGoals>,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<UpdateResult | null>;
+
+  // Delete a Goals by its ID
+  deleteGoals(
+    goalsId: string | ObjectId,
+    bySlug: boolean,
+    session?: ClientSession,
+  ): Promise<DeleteResult | null>;
 }

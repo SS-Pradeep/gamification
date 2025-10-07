@@ -7,3 +7,4 @@ export * from './Events.js';
 export * from './Rule.js';
 export * from './ScoringTransformer.js';
 export * from './Currency.js';
+export * from './Goals.js';
