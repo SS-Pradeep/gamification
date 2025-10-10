@@ -1086,8 +1086,10 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
           update: [
             {
               $set: {
-                pendingGoalIds: {
-                  $setDifference: ['$pendingGoalIds', goalIds],
+                $cond: {
+                  if: {$gt: [{$size: {$ifNull: ['$pendingGoalIds', []]}}, 0]},
+                  then: {$setDifference: ['$pendingGoalIds', goalIds]},
+                  else: {$setDifference: [ach.goalIds, goalIds]},
                 },
               },
             },
@@ -1096,5 +1098,41 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
         },
       };
     });
+
+    const achievementUpdateResult =
+      await this.userAchievementCollection.bulkWrite(achievementBulkOps, {
+        session,
+      });
+
+    console.log(achievementUpdateResult);
+
+    // Step 6: Finally, fetch the achievements in progress with empty pendingGoalIds as unlocked achievements.
+    const achievementsUnlocked = await this.userAchievementCollection
+      .aggregate([
+        {$match: {userId: metricTriggers.userId}},
+        {$match: {pendingGoalIds: {$exists: false, $eq: []}}},
+      ])
+      .toArray();
+
+    // Step 7: Add unlockedAchievements to userAchievements collection if not already present.
+
+    const unlockedAchievementIds = achievementsUnlocked.map(ach => ach._id);
+
+    if (unlockedAchievementIds.length > 0) {
+      await this.userAchievementCollection.updateOne(
+        {userId: metricTriggers.userId},
+        {
+          $addToSet: {
+            achievements: {$each: unlockedAchievementIds},
+          },
+        },
+        {session},
+      );
+    }
+
+    return {
+      metricsUpdated: metricsUpdated,
+      achievementsUnlocked: achievementsUnlocked,
+    };
   }
 }
