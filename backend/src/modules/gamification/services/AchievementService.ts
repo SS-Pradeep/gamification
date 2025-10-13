@@ -52,18 +52,19 @@ export class achievementService extends BaseService {
         session,
       );*/
 
-      // Check if GoalId is valid
-      const isValidGoalId = await this.gamifyEngineRepo.readGoal(
-        achievement.goalId,
-        false,
-        session,
+      // Check if GoalIds are valid
+      // optimize this to a single query later
+      const areValidGoalIds = await Promise.all(
+        achievement.goalIds.map(goalId =>
+          this.gamifyEngineRepo.readGoal(goalId, false, session),
+        ),
       );
 
-      console.log('isValidGoalId', isValidGoalId, achievement.goalId);
+      console.log('areValidGoalIds', areValidGoalIds, achievement.goalIds);
 
-      if (!isValidGoalId) {
+      if (!areValidGoalIds) {
         throw new NotFoundError(
-          `Game goal with ID ${achievement.goalId} not found`,
+          `Game goals with IDs ${achievement.goalIds} not found`,
         );
       }
 
@@ -74,6 +75,20 @@ export class achievementService extends BaseService {
 
       if (!createdAchievement) {
         throw new InternalServerError('Failed to create achievement');
+      }
+
+      // Add the achievement Id to each of the associated goals
+
+      const addedToGoals = await this.gamifyEngineRepo.addAchievementToGoals(
+        createdAchievement._id,
+        achievement.goalIds,
+        session,
+      );
+
+      if (!addedToGoals) {
+        throw new InternalServerError(
+          'Failed to associate achievement with goals',
+        );
       }
 
       return plainToClass(MetricAchievement, createdAchievement);
@@ -161,17 +176,29 @@ export class achievementService extends BaseService {
         );
       }
 
-      // Validate that the referenced metric exists
-      const isValidMetricId = await this.gamifyEngineRepo.readGameMetric(
-        achievementId,
-        isSlug,
-        session,
+      // Validate that the referenced goals exists
+      // optimize this to a single query later
+      const areValidGoalIds = await Promise.all(
+        achievement.goalIds.map(goalId =>
+          this.gamifyEngineRepo.readGoal(goalId, false, session),
+        ),
       );
 
-      if (!isValidMetricId) {
-        throw new NotFoundError(
-          `Game metric with goal ID ${achievement.goalId} not found`,
-        );
+      if (!areValidGoalIds.every(Boolean)) {
+        throw new NotFoundError(`One or more goals not found`);
+      }
+
+      if (achievement.goalIds !== existingAchievement.goalIds) {
+        // Update should remove achievement from old goals and add to new goals.
+        // This is expensive thus do only if goalIds is different from existing.
+        // Handle this in repo layer within a transaction
+        const updatedInGoals =
+          await this.gamifyEngineRepo.updateAchievementInGoals(
+            achievementId,
+            existingAchievement.goalIds, // old goals
+            achievement.goalIds, // new goals
+            session,
+          );
       }
 
       updateResult = await this.gamifyEngineRepo.updateAchievement(

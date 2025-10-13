@@ -12,8 +12,8 @@ import {
   IUserGameAchievement,
   IMetricTrigger,
   IGoals,
+  ID,
 } from '../../interfaces/models.js';
-import {Client} from 'express-rate-limit';
 
 /**
  * Interface for gamification engine repository.
@@ -56,6 +56,20 @@ export interface IGamifyEngineRepository {
     achievement: IMetricAchievement,
     session?: ClientSession,
   ): Promise<IMetricAchievement | null>;
+
+  // Add achievement to goals
+  addAchievementToGoals(
+    achievementId: string | ObjectId,
+    goalIds: ID[],
+    session?: ClientSession,
+  ): Promise<boolean>;
+
+  updateAchievementInGoals(
+    achievementId: string | ObjectId,
+    currentGoalIds: ID[],
+    newGoalIds: ID[],
+    session?: ClientSession,
+  ): Promise<boolean>;
 
   // Get an achievement by its ID
   readAchievement(

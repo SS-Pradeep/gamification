@@ -6,6 +6,7 @@ import {
 } from '#shared/constants/transformerConstants.js';
 import {ID, IGoals, IUpdateGoals, Trigger} from '#root/shared/index.js';
 import {JSONSchema} from 'class-validator-jsonschema';
+import {ObjectId} from 'mongodb';
 
 /**
  * Goals class - represents a goal in the gamification system
@@ -91,6 +92,15 @@ export class Goals implements IGoals {
   })
   scope: string;
 
+  @Expose()
+  @JSONSchema({
+    title: 'AchievementIds',
+    description: 'List of Achievement IDs associated with this goal',
+    example: ['60d5ec49b3f1c8e4a8f8b8c1', '60d5ec49b3f1c8e4a8f8b8c2'],
+    type: 'array',
+  })
+  achievementIds: (string | ObjectId)[];
+
   constructor(goal: IGoals) {
     if (goal) {
       this._id = goal._id;
@@ -101,6 +111,7 @@ export class Goals implements IGoals {
       this.metricId = goal.metricId;
       this.slug = goal.slug;
       this.scope = goal.scope;
+      this.achievementIds = goal.achievementIds;
     }
   }
 }
@@ -154,6 +165,15 @@ export class UpdateGoals implements IUpdateGoals {
   @Transform(StringToObjectId.transformer, {toClassOnly: true})
   @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
   metricId: ID;
+
+  @Expose()
+  @JSONSchema({
+    title: 'AchievementIds',
+    description: 'List of Achievement IDs associated with this goal',
+    example: ['60d5ec49b3f1c8e4a8f8b8c1', '60d5ec49b3f1c8e4a8f8b8c2'],
+    type: 'array',
+  })
+  achievementIds: (string | ObjectId)[];
 
   constructor(updateGoal: IUpdateGoals) {
     if (updateGoal) {

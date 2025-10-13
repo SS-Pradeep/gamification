@@ -479,6 +479,7 @@ export interface IUpdateMetricAchievement {
 export interface IMetricAchievement extends IAchievementBase {
   trigger: Trigger;
   goalIds: (string | ObjectId)[];
+  version: number;
 }
 
 // UserMetric interface
@@ -604,4 +605,5 @@ export interface IUserAchievementProgress {
   userId: string | ObjectId;
   achievementId: string | ObjectId;
   pendingGoalIds: (string | ObjectId)[];
+  version: number;
 }

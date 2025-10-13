@@ -135,6 +135,15 @@ export class MetricAchievement implements IMetricAchievement {
   })
   scope: string;
 
+  @Expose()
+  @JSONSchema({
+    title: 'Version',
+    description: 'Version number for concurrency control',
+    example: 1,
+    type: 'number',
+  })
+  version: number = 1; // Default version is 1 (for optimistic concurrency control
+
   /**
    * Constructor - creates a new MetricAchievement instance
    * @param achievementBody - Optional data to populate the achievement
@@ -252,7 +261,7 @@ export class UpdateMetricAchievement implements IUpdateMetricAchievement {
       this.status = achievementBody?.status || AchievementStatus.ACTIVE;
       this.rewardMetricId = achievementBody?.rewardMetricId;
       this.rewardIncrementValue = achievementBody?.rewardIncrementValue;
-      this.goalId = achievementBody.goalId;
+      this.goalIds = achievementBody.goalIds;
     }
   }
 }
