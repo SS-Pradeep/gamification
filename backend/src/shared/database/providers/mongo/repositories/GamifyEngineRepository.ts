@@ -1088,16 +1088,26 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
     // Step 6: Fetch achievements linked to the reached goals.
 
-    const achievementsUnlockable = goalsReached
+    const achievementsUnlockableIds = goalsReached
       .map(goal => goal.achievementIds)
       .flat();
 
-    if (achievementsUnlockable.length === 0) {
+    if (achievementsUnlockableIds.length === 0) {
       return {
         metricsUpdated: metricsUpdated,
         achievementsUnlocked: [],
       };
     }
+
+    // Fetch achievement details to get version and goalIds.
+    const achievementsUnlockable = await this.achievementCollection
+      .find(
+        {
+          _id: {$in: achievementsUnlockableIds},
+        },
+        {session},
+      )
+      .toArray();
 
     // Perform lazy-sync by checking the version of the achievement in userAchievementProgress collection.
     // If the version is different, it means the achievement has been updated (ground truth changed).
@@ -1105,12 +1115,47 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
     // reset means setting pendingGoalIds to ach.goalIds - userachievement.completedGoalIds.
     // Perform in bulk operation with aggregation.
 
+    const userCompletedGoals = await this.userAchievementCollection.findOne(
+      {userId: metricTriggers.userId},
+      {session},
+    );
+
+    const lazySyncOps = achievementsUnlockable.map(ach => {
+      return {
+        updateOne: {
+          filter: {
+            userId: metricTriggers.userId,
+            achievementId: ach._id,
+            version: {$ne: ach.version},
+          },
+          update: [
+            {
+              $set: {
+                pendingGoalIds: {
+                  $setDifference: [
+                    ach.goalIds,
+                    userCompletedGoals.completedGoalIds,
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      };
+    });
+
+    if (lazySyncOps.length > 0) {
+      await this.userAchievementProgressCollection.bulkWrite(lazySyncOps, {
+        session,
+      });
+    }
+
     // Filter inactive achievements.
 
     let achievements = await this.achievementCollection
       .find(
         {
-          _id: {$in: achievementsUnlockable},
+          _id: {$in: achievementsUnlockableIds},
           status: AchievementStatus.ACTIVE,
         },
         {session},
@@ -1164,9 +1209,17 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
               $set: {
                 $cond: {
                   if: {$gt: [{$size: {$ifNull: ['$pendingGoalIds', []]}}, 0]},
-                  then: {$setDifference: ['$pendingGoalIds', goalIds]},
+                  then: {
+                    $setDifference: [
+                      '$pendingGoalIds',
+                      userCompletedGoals.completedGoalIds,
+                    ],
+                  },
                   else: {
-                    $setDifference: [ach.goalIds, goalIds],
+                    $setDifference: [
+                      ach.goalIds,
+                      userCompletedGoals.completedGoalIds,
+                    ],
                     $set: {version: ach.version},
                   },
                 },
@@ -1179,17 +1232,27 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
     });
 
     const achievementUpdateResult =
-      await this.userAchievementCollection.bulkWrite(achievementBulkOps, {
-        session,
-      });
+      await this.userAchievementProgressCollection.bulkWrite(
+        achievementBulkOps,
+        {
+          session,
+        },
+      );
 
     console.log(achievementUpdateResult);
 
     // Step 7: Finally, fetch the achievements in progress with empty pendingGoalIds as unlocked achievements.
-    const achievementsUnlocked = await this.userAchievementCollection
+    const achievementsUnlocked = await this.userAchievementProgressCollection
       .aggregate([
         {$match: {userId: metricTriggers.userId}},
-        {$match: {pendingGoalIds: {$exists: false, $eq: []}}},
+        {
+          $match: {
+            $or: [
+              {pendingGoalIds: {$exists: false}},
+              {pendingGoalIds: {$size: 0}},
+            ],
+          },
+        },
       ])
       .toArray();
 
