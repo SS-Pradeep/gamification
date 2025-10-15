@@ -479,7 +479,7 @@ export interface IUpdateMetricAchievement {
 export interface IMetricAchievement extends IAchievementBase {
   trigger: Trigger;
   goalIds: (string | ObjectId)[];
-  version: number;
+  version?: number;
 }
 
 // UserMetric interface

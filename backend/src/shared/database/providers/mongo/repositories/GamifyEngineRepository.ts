@@ -317,7 +317,7 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
   // Create a new achievement
   async createAchievement(
-    achievement: IMetricAchievement,
+    achievement: MetricAchievement,
     session?: ClientSession,
   ): Promise<IMetricAchievement | null> {
     await this.init();
@@ -1207,23 +1207,25 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
           update: [
             {
               $set: {
-                $cond: {
-                  if: {$gt: [{$size: {$ifNull: ['$pendingGoalIds', []]}}, 0]},
-                  then: {
-                    $setDifference: [
-                      '$pendingGoalIds',
-                      userCompletedGoals.completedGoalIds,
-                    ],
-                  },
-                  else: {
-                    $setDifference: [
-                      ach.goalIds,
-                      userCompletedGoals.completedGoalIds,
-                    ],
-                    $set: {version: ach.version},
+                pendingGoalIds: {
+                  $cond: {
+                    if: {$gt: [{$size: {$ifNull: ['$pendingGoalIds', []]}}, 0]},
+                    then: {
+                      $setDifference: [
+                        '$pendingGoalIds',
+                        userCompletedGoals.completedGoalIds,
+                      ],
+                    },
+                    else: {
+                      $setDifference: [
+                        ach.goalIds,
+                        userCompletedGoals.completedGoalIds,
+                      ],
+                    },
                   },
                 },
               },
+              version: ach.version,
             },
           ],
           upsert: true,
@@ -1258,7 +1260,9 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
 
     // Step 8: Add unlockedAchievements to userAchievements collection if not already present.
 
-    const unlockedAchievementIds = achievementsUnlocked.map(ach => ach._id);
+    const unlockedAchievementIds = achievementsUnlocked.map(
+      ach => ach.achievementId,
+    );
 
     if (unlockedAchievementIds.length > 0) {
       await this.userAchievementCollection.updateOne(
