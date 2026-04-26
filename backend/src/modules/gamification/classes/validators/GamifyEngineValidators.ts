@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {
   IsNotEmpty,
   IsString,
@@ -175,7 +174,7 @@ export class GameMetricsParams {
 /**
  * Validator for updating an existing game metric
  */
-export class updateGameMetric implements IUpdateGameMetric {
+export class UpdateGameMetricBody implements IUpdateGameMetric {
   // MongoDB ID of the metric to update
   @JSONSchema({
     title: 'Game Metric Id',

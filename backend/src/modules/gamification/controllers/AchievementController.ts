@@ -12,17 +12,19 @@ import {
 } from 'routing-controllers';
 
 import {
-  achievementService,
-  userGameAchievementsService,
+  AchievementService,
+  UserGameAchievementsService,
 } from '#gamification/services/index.js';
 
 import {
   MetricAchievement,
+  MetricAchievementResponse,
   CreateMetricAchievementBody,
   AchievementParams,
   UpdateMetricAchievementBody,
   CreateUserGameAchievementBody,
   UserGameAchievement,
+  UserGameAchievementResponse,
   GetUserGameAchievementParams,
   UpdateUserGameAchievementBody,
   DeleteUserGameAchievementParams,
@@ -30,7 +32,6 @@ import {
 } from '#gamification/classes/index.js';
 
 import {GAMIFICATION_TYPES} from '../types.js';
-import {plainToInstance} from 'class-transformer';
 import {OpenAPI} from 'routing-controllers-openapi';
 
 @OpenAPI({
@@ -43,10 +44,10 @@ import {OpenAPI} from 'routing-controllers-openapi';
 export class AchievementController {
   constructor(
     @inject(GAMIFICATION_TYPES.AchievementService)
-    private readonly AchievementService: achievementService,
+    private readonly achievementService: AchievementService,
 
     @inject(GAMIFICATION_TYPES.UserGameAchievementsService)
-    private readonly UserGameAchievementsService: userGameAchievementsService,
+    private readonly userGameAchievementsService: UserGameAchievementsService,
   ) {}
 
   @Authorized(['admin', 'instructor'])
@@ -54,18 +55,15 @@ export class AchievementController {
   @HttpCode(201)
   async createAchievement(
     @Body() body: CreateMetricAchievementBody,
-  ): Promise<MetricAchievement> {
+  ): Promise<MetricAchievementResponse> {
     // This method creates a metric achievement.
     // It expects the body to contain the achievement data.
-    let achievement = new MetricAchievement(body);
+    const achievement = new MetricAchievement(body);
 
-    achievement = plainToInstance(MetricAchievement, achievement);
+    const createdAchievement =
+      await this.achievementService.createAchievement(achievement);
 
-    const createdAchievement = await this.AchievementService.createAchievement(
-      achievement,
-    );
-
-    return createdAchievement;
+    return new MetricAchievementResponse(createdAchievement);
   }
 
   @Authorized(['admin', 'instructor'])
@@ -73,23 +71,25 @@ export class AchievementController {
   @HttpCode(200)
   async getAchievementById(
     @Params() params: AchievementParams,
-  ): Promise<MetricAchievement> {
+  ): Promise<MetricAchievementResponse> {
     // This method retrieves a achievement by its ID.
     // It expects the ID to be passed as a parameter.
-    const achievement = await this.AchievementService.getAchievementById(
+    const achievement = await this.achievementService.getAchievementById(
       params.achievementId,
     );
 
-    return achievement;
+    return new MetricAchievementResponse(achievement);
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/achievements/')
   @HttpCode(200)
-  async getAchievements(): Promise<MetricAchievement[]> {
+  async getAchievements(): Promise<MetricAchievementResponse[]> {
     // This method retrieves all achievements.
-    const achievements = await this.AchievementService.getAchievements();
-    return achievements;
+    const achievements = await this.achievementService.getAchievements();
+    return achievements.map(
+      achievement => new MetricAchievementResponse(achievement),
+    );
   }
 
   @Authorized(['admin', 'instructor'])
@@ -104,7 +104,7 @@ export class AchievementController {
 
     const achievementData = new UpdateMetricAchievement(body);
 
-    const updateResult = await this.AchievementService.updateAchievement(
+    const updateResult = await this.achievementService.updateAchievement(
       achievementId,
       achievementData,
     );
@@ -122,9 +122,8 @@ export class AchievementController {
     // It expects the ID to be passed as a parameter.
     const achievementId = params.achievementId;
 
-    const deleteResult = await this.AchievementService.deleteAchievement(
-      achievementId,
-    );
+    const deleteResult =
+      await this.achievementService.deleteAchievement(achievementId);
 
     return {status: deleteResult};
   }
@@ -134,18 +133,18 @@ export class AchievementController {
   @HttpCode(201)
   async createUserGameAchievement(
     @Body() body: CreateUserGameAchievementBody,
-  ): Promise<UserGameAchievement> {
+  ): Promise<UserGameAchievementResponse> {
     // This method creates a user game achievement.
     // It expects the body to contain the user game achievement data.
 
     const userGameAchievement = new UserGameAchievement(body);
 
     const createdAchievement =
-      await this.UserGameAchievementsService.createUserGameAchievement(
+      await this.userGameAchievementsService.createUserGameAchievement(
         userGameAchievement,
       );
 
-    return createdAchievement;
+    return new UserGameAchievementResponse(createdAchievement);
   }
 
   @Authorized(['admin', 'instructor', 'student'])
@@ -153,7 +152,7 @@ export class AchievementController {
   @HttpCode(200)
   async getUserGameAchievements(
     @Params() params: GetUserGameAchievementParams,
-  ): Promise<UserGameAchievement> {
+  ): Promise<UserGameAchievementResponse> {
     // This method retrives user game achievements by user ID.
 
     // It expects the user ID to be passed as a parameter.
@@ -161,9 +160,9 @@ export class AchievementController {
     const userId = params.userId;
 
     const userAchievements =
-      await this.UserGameAchievementsService.readUserGameAchievements(userId);
+      await this.userGameAchievementsService.readUserGameAchievements(userId);
 
-    return userAchievements;
+    return new UserGameAchievementResponse(userAchievements);
   }
 
   @Authorized(['admin', 'instructor', 'student'])
@@ -178,7 +177,7 @@ export class AchievementController {
     const userGameAchievement = new UserGameAchievement(body);
 
     const updateResult =
-      await this.UserGameAchievementsService.updateUserGameAchievement(
+      await this.userGameAchievementsService.updateUserGameAchievement(
         userGameAchievement,
       );
 
@@ -197,7 +196,7 @@ export class AchievementController {
     const {userId, achievementId} = params;
 
     const deleteResult =
-      await this.UserGameAchievementsService.deleteUserGameAchievement(
+      await this.userGameAchievementsService.deleteUserGameAchievement(
         userId,
         achievementId,
       );

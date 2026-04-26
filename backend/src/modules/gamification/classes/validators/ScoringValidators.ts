@@ -10,9 +10,14 @@ import {
   ValidateNested,
   ArrayMinSize,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { JSONSchema } from 'class-validator-jsonschema';
-import { ConfidenceScore, IQuestionGrade, IQuizAttempt, IScoringWeights } from '#gamification/interfaces/scoring.js';
+import {Type} from 'class-transformer';
+import {JSONSchema} from 'class-validator-jsonschema';
+import {
+  ConfidenceScore,
+  IQuestionGrade,
+  IQuizAttempt,
+  IScoringWeights,
+} from '#gamification/interfaces/scoring.js';
 
 export class QuestionGradeValidator implements IQuestionGrade {
   @JSONSchema({
@@ -77,10 +82,10 @@ export class QuizAttemptValidator implements IQuizAttempt {
   @JSONSchema({
     description: 'Question grades',
     type: 'array',
-    items: { $ref: '#/components/schemas/QuestionGradeValidator' }
+    items: {$ref: '#/components/schemas/QuestionGradeValidator'},
   })
   @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested({each: true})
   @ArrayMinSize(1)
   @Type(() => QuestionGradeValidator)
   grades: QuestionGradeValidator[];

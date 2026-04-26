@@ -16,9 +16,8 @@ export class ScoringWeightsRepository {
 
   private async init() {
     if (!this.weightsCollection) {
-      this.weightsCollection = await this.db.getCollection<IScoringWeights>(
-        'scoring_weights',
-      );
+      this.weightsCollection =
+        await this.db.getCollection<IScoringWeights>('scoring_weights');
     }
   }
 

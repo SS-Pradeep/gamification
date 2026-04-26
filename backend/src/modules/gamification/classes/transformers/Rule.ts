@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -105,6 +104,32 @@ export class Rule implements IRule {
       this.metricId = body.metricId;
       this.logic = body.logic || {};
       this.ruleVersion = body.ruleVersion || 1;
+    }
+  }
+}
+
+export class RuleResponse implements IRule {
+  _id?: string;
+  ruleName: string;
+  ruleDescription: string;
+  eventId: string;
+  metricId: string;
+  logic: Record<string, any>;
+  ruleVersion: number;
+  slug: string;
+  scope: string;
+
+  constructor(rule?: Rule) {
+    if (rule) {
+      this._id = rule._id?.toString();
+      this.ruleName = rule.ruleName;
+      this.ruleDescription = rule.ruleDescription;
+      this.eventId = rule.eventId?.toString();
+      this.metricId = rule.metricId?.toString();
+      this.logic = rule.logic || {};
+      this.ruleVersion = rule.ruleVersion;
+      this.slug = rule.slug;
+      this.scope = rule.scope;
     }
   }
 }

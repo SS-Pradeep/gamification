@@ -13,7 +13,7 @@ import {ScoringWeightsRepository} from '#shared/database/providers/mongo/reposit
 import {BaseService} from '#root/shared/classes/BaseService.js';
 import {MongoDatabase} from '#shared/database/providers/mongo/MongoDatabase.js';
 // import {SubmissionRepository} from '#quizzes/repositories/providers/mongodb/SubmissionRepository.js';
-import {userGameMetricsService} from './UserGameMetricsService.js';
+import {UserGameMetricsService} from './UserGameMetricsService.js';
 import {UserGameMetric} from '#gamification/classes/index.js';
 import {NotFoundError, InternalServerError} from 'routing-controllers';
 
@@ -34,7 +34,7 @@ export class ScoringService extends BaseService {
     /*@inject(QUIZZES_TYPES.SubmissionRepo)
     private submissionRepo: SubmissionRepository,*/
     @inject(GAMIFICATION_TYPES.UserGameMetricsService)
-    private userGameMetricsService: userGameMetricsService,
+    private userGameMetricsService: UserGameMetricsService,
     @inject(GLOBAL_TYPES.Database)
     private mongoDatabase: MongoDatabase,
   ) {

@@ -12,9 +12,10 @@ import {
   NotFoundError,
 } from 'routing-controllers';
 
-import {ruleService} from '#gamification/services/index.js';
+import {RuleService} from '#gamification/services/index.js';
 import {
   Rule,
+  RuleResponse,
   RuleBody,
   UpdateRuleBody,
   ReadRuleParams,
@@ -33,13 +34,13 @@ import {OpenAPI} from 'routing-controllers-openapi';
 export class RuleController {
   constructor(
     @inject(GAMIFICATION_TYPES.RuleService)
-    private readonly ruleService: ruleService,
+    private readonly ruleService: RuleService,
   ) {}
 
   @Authorized(['admin', 'instructor'])
   @HttpCode(201)
   @Post('/rules')
-  async createRule(@Body() rule: RuleBody): Promise<RuleBody> {
+  async createRule(@Body() rule: RuleBody): Promise<RuleResponse> {
     // Transform the rule body to rule instance
     const ruleInstance = new Rule(rule);
 
@@ -47,21 +48,23 @@ export class RuleController {
     const createdRule = await this.ruleService.createRule(ruleInstance);
 
     // Return the created rule
-    return createdRule;
+    return new RuleResponse(createdRule);
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/rules/event/:eventId')
-  async readRules(@Params() params: ReadEventParams): Promise<Rule[] | null> {
+  async readRules(
+    @Params() params: ReadEventParams,
+  ): Promise<RuleResponse[] | null> {
     // Convert string ID to ObjectId
     const rules = await this.ruleService.readRules(params.eventId);
     // Return plain object array if rules exist, otherwise null
-    return rules;
+    return rules ? rules.map(rule => new RuleResponse(rule)) : null;
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/rules/:ruleId')
-  async readRule(@Params() params: ReadRuleParams): Promise<Rule> {
+  async readRule(@Params() params: ReadRuleParams): Promise<RuleResponse> {
     // Convert string ID to ObjectId
     const ruleId = params.ruleId;
 
@@ -69,7 +72,7 @@ export class RuleController {
     const rule = await this.ruleService.readRule(ruleId);
 
     // Return plain object
-    return rule;
+    return new RuleResponse(rule);
   }
 
   @Authorized(['admin', 'instructor'])

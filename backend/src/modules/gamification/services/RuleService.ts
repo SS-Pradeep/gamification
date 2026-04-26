@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {inject, injectable} from 'inversify';
 import {
   BaseService,
@@ -18,7 +17,7 @@ import {ObjectId} from 'mongodb';
  */
 
 @injectable()
-export class ruleService extends BaseService {
+export class RuleService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.Database)
     private readonly mongoDatabase: MongoDatabase,

@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {MongoDatabase} from '../MongoDatabase.js';
 import {
   Collection,
@@ -53,14 +52,12 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
   // Initialize collections if not already done
   private async init() {
     if (!this.initialized) {
-      this.metricCollection = await this.db.getCollection<GameMetric>(
-        'gameMetrics',
-      );
+      this.metricCollection =
+        await this.db.getCollection<GameMetric>('gameMetrics');
       this.achievementCollection =
         await this.db.getCollection<MetricAchievement>('metricAchievements');
-      this.userMetricCollection = await this.db.getCollection<UserGameMetric>(
-        'userGameMetrics',
-      );
+      this.userMetricCollection =
+        await this.db.getCollection<UserGameMetric>('userGameMetrics');
       this.userAchievementCollection =
         await this.db.getCollection<UserGameAchievement>(
           'userGameAchievements',
@@ -150,7 +147,7 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       };
     }
 
-    if (strategy == StreakResolutionType.CONSECUTIVE) {
+    if (strategy === StreakResolutionType.CONSECUTIVE) {
       const lastStreakUpdate = new Date(metric.lastStreakUpdated);
       const today = new Date();
       const diff = today.getTime() - lastStreakUpdate.getTime();
@@ -168,7 +165,7 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
         // Missed more than 1 day — reset streak
         metric.value = 0;
       }
-    } else if (strategy == StreakResolutionType.DAILY) {
+    } else if (strategy === StreakResolutionType.DAILY) {
       const now = new Date();
 
       const lastStreakUpdate = new Date(metric.lastStreakUpdated)
@@ -434,12 +431,17 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       {session},
     );
 
-    // Update version of the achievement to handle lazy-sync later.
-    await this.achievementCollection.updateOne(
-      {_id: achievementId},
-      {$inc: {version: 1}},
-      {session},
-    );
+    if (
+      (removeResult.acknowledged && removeResult.modifiedCount > 0) ||
+      (addResult.acknowledged && addResult.modifiedCount > 0)
+    ) {
+      // Update version of the achievement to handle lazy-sync later.
+      await this.achievementCollection.updateOne(
+        {_id: achievementId},
+        {$inc: {version: 1}},
+        {session},
+      );
+    }
 
     return (
       (removeResult.acknowledged && removeResult.modifiedCount > 0) ||
@@ -889,7 +891,7 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       metrics.length !== metricTriggers.metrics.length ||
       userMetrics.length !== metricTriggers.metrics.length
     ) {
-      return;
+      return null;
     }
 
     const metricsById = new Map(metrics.map(doc => [doc._id.toString(), doc]));
@@ -1120,6 +1122,12 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
       {session},
     );
 
+    if (!userCompletedGoals) {
+      throw new Error(
+        'User achievement record not found for userId ${metricTriggers.userId}.Ensure eager initialization has been performed.',
+      );
+    }
+
     const lazySyncOps = achievementsUnlockable.map(ach => {
       return {
         updateOne: {
@@ -1224,8 +1232,8 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
                     },
                   },
                 },
+                version: ach.version,
               },
-              version: ach.version,
             },
           ],
           upsert: true,
@@ -1246,7 +1254,12 @@ export class GamifyEngineRepository implements IGamifyEngineRepository {
     // Step 7: Finally, fetch the achievements in progress with empty pendingGoalIds as unlocked achievements.
     const achievementsUnlocked = await this.userAchievementProgressCollection
       .aggregate([
-        {$match: {userId: metricTriggers.userId}},
+        {
+          $match: {
+            achievementId: {$in: achievementsUnlockableIds},
+            userId: metricTriggers.userId,
+          },
+        },
         {
           $match: {
             $or: [

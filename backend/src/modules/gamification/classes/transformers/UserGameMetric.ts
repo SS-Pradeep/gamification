@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -89,6 +88,26 @@ export class UserGameMetric implements IUserGameMetric {
       this.value = body.value;
       this.lastUpdated = new Date();
       this.lastStreakUpdated = null;
+    }
+  }
+}
+
+export class UserGameMetricResponse implements IUserGameMetric {
+  _id?: string;
+  userId: string;
+  metricId: string;
+  value: number;
+  lastUpdated: Date;
+  lastStreakUpdated?: Date;
+
+  constructor(userGameMetric?: UserGameMetric) {
+    if (userGameMetric) {
+      this._id = userGameMetric._id?.toString();
+      this.userId = userGameMetric.userId?.toString();
+      this.metricId = userGameMetric.metricId?.toString();
+      this.value = userGameMetric.value;
+      this.lastUpdated = userGameMetric.lastUpdated;
+      this.lastStreakUpdated = userGameMetric.lastStreakUpdated;
     }
   }
 }

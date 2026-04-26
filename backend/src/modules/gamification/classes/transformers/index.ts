@@ -8,3 +8,4 @@ export * from './Rule.js';
 export * from './ScoringTransformer.js';
 export * from './Currency.js';
 export * from './Goals.js';
+export * from './Project.js';

@@ -12,24 +12,25 @@ import {
 } from 'routing-controllers';
 
 import {
-  metricService,
-  userGameMetricsService,
+  MetricService,
+  UserGameMetricsService,
 } from '#gamification/services/index.js';
 
 import {
   GameMetric,
+  GameMetricResponse,
   CreateGameMetricBody,
   GameMetricsParams,
-  updateGameMetric,
+  UpdateGameMetricBody,
   UserGameMetricBody,
   UserGameMetric,
+  UserGameMetricResponse,
   ReadUserGameMetricsParams,
   UpdateUserGameMetricBody,
   DeleteUserGameMetricParams,
 } from '#gamification/classes/index.js';
 
 import {GAMIFICATION_TYPES} from '../types.js';
-import {instanceToPlain} from 'class-transformer';
 import {OpenAPI} from 'routing-controllers-openapi';
 
 @OpenAPI({
@@ -42,10 +43,10 @@ import {OpenAPI} from 'routing-controllers-openapi';
 export class MetricController {
   constructor(
     @inject(GAMIFICATION_TYPES.MetricService)
-    private readonly MetricService: metricService,
+    private readonly metricService: MetricService,
 
     @inject(GAMIFICATION_TYPES.UserGameMetricsService)
-    private readonly UserGameMetricsService: userGameMetricsService,
+    private readonly userGameMetricsService: UserGameMetricsService,
   ) {}
 
   @Authorized(['admin', 'instructor'])
@@ -53,13 +54,13 @@ export class MetricController {
   @HttpCode(201)
   async createGameMetric(
     @Body() body: CreateGameMetricBody,
-  ): Promise<GameMetric> {
+  ): Promise<GameMetricResponse> {
     // This method creates a game metric.
     // It expects the body to contain the game metric data.
     const gameMetric = new GameMetric(body);
-    const createdMetric = await this.MetricService.createGameMetric(gameMetric);
+    const createdMetric = await this.metricService.createGameMetric(gameMetric);
 
-    return instanceToPlain(createdMetric) as GameMetric;
+    return new GameMetricResponse(createdMetric);
   }
 
   @Authorized(['admin', 'instructor'])
@@ -67,30 +68,30 @@ export class MetricController {
   @HttpCode(200)
   async getGameMetricById(
     @Params() params: GameMetricsParams,
-  ): Promise<GameMetric> {
+  ): Promise<GameMetricResponse> {
     // This method retrieves a game metric by its ID.
     // It expects the ID to be passed as a parameter.
-    const metric = await this.MetricService.getGameMetricById(params.metricId);
+    const metric = await this.metricService.getGameMetricById(params.metricId);
 
-    return metric;
+    return new GameMetricResponse(metric);
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/metrics/')
-  async getGameMetrics(): Promise<GameMetric[]> {
-    const metrics = await this.MetricService.getGameMetrics();
-    return instanceToPlain(metrics) as GameMetric[];
+  async getGameMetrics(): Promise<GameMetricResponse[]> {
+    const metrics = await this.metricService.getGameMetrics();
+    return metrics.map(metric => new GameMetricResponse(metric));
   }
 
   @Authorized(['admin', 'instructor'])
   @Put('/metrics/')
   @HttpCode(200)
   async updateGameMetric(
-    @Body() body: updateGameMetric,
+    @Body() body: UpdateGameMetricBody,
   ): Promise<{status: boolean}> {
     const {metricId, ...updateData} = body;
 
-    const updateResult = await this.MetricService.updateGameMetric(
+    const updateResult = await this.metricService.updateGameMetric(
       metricId,
       updateData,
     );
@@ -108,7 +109,7 @@ export class MetricController {
     // It expects the ID to be passed as a parameter.
     const metricId = params.metricId;
 
-    const deleteResult = await this.MetricService.deleteGameMetric(metricId);
+    const deleteResult = await this.metricService.deleteGameMetric(metricId);
 
     return {status: deleteResult};
   }
@@ -116,16 +117,18 @@ export class MetricController {
   @Authorized(['admin', 'instructor', 'student'])
   @Post('/user/metrics/')
   @HttpCode(201)
-  async createUserGameMetric(@Body() body: UserGameMetricBody) {
+  async createUserGameMetric(
+    @Body() body: UserGameMetricBody,
+  ): Promise<UserGameMetricResponse> {
     // This method creates a user game metric.
     // It expects the body to cotain the user game metric data.
 
     const userGameMetric = new UserGameMetric(body);
 
     const createdMetric =
-      await this.UserGameMetricsService.createUserGameMetric(userGameMetric);
+      await this.userGameMetricsService.createUserGameMetric(userGameMetric);
 
-    return createdMetric;
+    return new UserGameMetricResponse(createdMetric);
   }
 
   @Authorized(['admin', 'instructor', 'student'])
@@ -133,11 +136,11 @@ export class MetricController {
   @HttpCode(200)
   async getUserGameMetrics(
     @Params() params: ReadUserGameMetricsParams,
-  ): Promise<UserGameMetric[]> {
-    const metrics = await this.UserGameMetricsService.readUserGameMetrics(
+  ): Promise<UserGameMetricResponse[]> {
+    const metrics = await this.userGameMetricsService.readUserGameMetrics(
       params.userId,
     );
-    return metrics;
+    return metrics.map(metric => new UserGameMetricResponse(metric));
   }
 
   @Authorized(['admin', 'instructor', 'student'])
@@ -147,9 +150,8 @@ export class MetricController {
     @Body() body: UpdateUserGameMetricBody,
   ): Promise<{status: boolean}> {
     const userGameMetric = new UserGameMetric(body);
-    const updateResult = await this.UserGameMetricsService.updateUserGameMetric(
-      userGameMetric,
-    );
+    const updateResult =
+      await this.userGameMetricsService.updateUserGameMetric(userGameMetric);
     return {status: updateResult};
   }
 
@@ -159,7 +161,7 @@ export class MetricController {
   async deleteUserGameMetric(
     @Params() params: DeleteUserGameMetricParams,
   ): Promise<{status: boolean}> {
-    const deleteResult = await this.UserGameMetricsService.deleteUserGameMetric(
+    const deleteResult = await this.userGameMetricsService.deleteUserGameMetric(
       params.userId,
       params.metricId,
     );

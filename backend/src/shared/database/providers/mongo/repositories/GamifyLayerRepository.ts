@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {inject, injectable} from 'inversify';
 import {
   Collection,
@@ -36,9 +35,8 @@ export class GamifyLayerRepository implements IGamifyLayerRepository {
     if (!this.initialized) {
       this.eventsCollection = await this.db.getCollection<Events>('events');
       this.rulesCollection = await this.db.getCollection<Rule>('rules');
-      this.currencyCollection = await this.db.getCollection<ICurrency>(
-        'currency',
-      );
+      this.currencyCollection =
+        await this.db.getCollection<ICurrency>('currency');
 
       // Create indexes for better performance
       try {

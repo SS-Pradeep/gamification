@@ -14,6 +14,7 @@ import {
 import {GoalService} from '#gamification/services/index.js';
 import {
   Goals,
+  GoalsResponse,
   UpdateGoals,
   CreateGoalsBody,
   UpdateGoalsBody,
@@ -38,30 +39,30 @@ export class GoalController {
   @Authorized(['admin', 'instructor'])
   @HttpCode(201)
   @Post('/goals')
-  async createGoals(@Body() goals: CreateGoalsBody): Promise<Goals> {
+  async createGoals(@Body() goals: CreateGoalsBody): Promise<GoalsResponse> {
     // Transform the goals body to an instance of Goals
     const goalsInstance = new Goals(goals);
 
     const createdGoals = await this.goalService.createGoals(goalsInstance);
 
     // Return the created goals
-    return createdGoals;
+    return new GoalsResponse(createdGoals);
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/goals')
   @HttpCode(200)
-  async readGoals(): Promise<Goals[]> {
+  async readGoals(): Promise<GoalsResponse[]> {
     const goals = await this.goalService.readGoals();
-    return goals;
+    return goals.map(goal => new GoalsResponse(goal));
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/goals/:goalsId')
   @HttpCode(200)
-  async readGoal(@Params() params: GoalsParams): Promise<Goals> {
+  async readGoal(@Params() params: GoalsParams): Promise<GoalsResponse> {
     const goal = await this.goalService.readGoal(params.goalsId);
-    return goal;
+    return new GoalsResponse(goal);
   }
 
   @Authorized(['admin', 'instructor'])
@@ -70,13 +71,13 @@ export class GoalController {
   async updateGoals(
     @Params() params: GoalsParams,
     @Body() goals: UpdateGoalsBody,
-  ): Promise<UpdateGoals> {
+  ): Promise<GoalsResponse> {
     const goalsInstance = new UpdateGoals(goals);
     const updatedGoals = await this.goalService.updateGoals(
       params.goalsId,
       goalsInstance,
     );
-    return updatedGoals;
+    return new GoalsResponse(updatedGoals);
   }
 
   @Authorized(['admin', 'instructor'])

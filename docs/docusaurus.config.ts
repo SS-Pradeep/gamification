@@ -1,112 +1,31 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
-import type { ScalarOptions } from '@scalar/docusaurus'
-import path from "path";
-import fs from "fs";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "ViBe",
-  tagline: "Reimagining Learning, One Question at a Time",
+  title: "GaaS",
+  tagline: "GaaS documentation",
   favicon: "img/favicon.ico",
 
-  // Set the production url of your site here
-  url: "https://continuousactivelearning.github.io",
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/vibe/",
-  deploymentBranch: "gh-pages",
-  trailingSlash: false,
-
-  markdown: {
-    mermaid: true,
+  // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
+  future: {
+    v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
-  plugins: [
-    [
-      "docusaurus-plugin-typedoc",
-      {
-        categorizeByGroup: true,
-        hideBreadcrumbs: true,
-        hidePageTitle: true,
-        entryPoints: [
-          "../backend/src/modules/courses/index.ts",
-          "../backend/src/modules/auth/index.ts",
-        ],
-        entryFileName:"Backend.md",
-        entryPointStrategy: "expand",
-        tsconfig: "../backend/tsconfig.json",
-        out: "./docs/api/backend",
-        exclude: ["**/tests/**"],
-        router: "category",
-        sidebar: {
-          autoConfiguration: true,
-        },
-      },
-    ],
-    [
-    '@scalar/docusaurus',
-    {
-      label: 'Scalar',
-      route: '/vibe/scalar',
-      showNavLink: true,
-      configuration: {
-        content: function() {
-          console.log('Attempting to load OpenAPI spec...');
-          
-          // This is the original path - go up one directory from __dirname to reach project root
-          const filePath = path.resolve(__dirname, './static/openapi/openapi.json');
-          console.log(`Looking for OpenAPI spec at: ${filePath}`);
-          
-          // Check if file exists
-          if (!fs.existsSync(filePath)) {
-            console.error(`ERROR: OpenAPI spec file not found at ${filePath}`);
-            return '{}';
-          }
-          
-          console.log('File exists, attempting to read...');
-          
-          try {
-            const fileContent = fs.readFileSync(filePath, 'utf8');
-            console.log('File read successfully, attempting to parse JSON...');
-            
-            try {
-              const jsonContent = JSON.parse(fileContent);
-              console.log('JSON parsed successfully');
-              return JSON.stringify(jsonContent);
-            } catch (parseError) {
-              console.error(`ERROR parsing OpenAPI spec JSON: ${parseError}`);
-              return '{}';
-            }
-          } catch (readError) {
-            console.error(`ERROR reading OpenAPI spec file: ${readError}`);
-            return '{}';
-          }
-        }(),
-      },
-    } as ScalarOptions,
-  ],
-    [
-      '@docusaurus/plugin-content-docs',
-      {
-        id: 'newdocs',                            // *must* be unique
-        path: 'newdocs',                          // folder you just created
-        routeBasePath: 'newdocs',                 // URL: /newdocs/<docId>
-        sidebarPath: require.resolve('./sidebarsNew.js'),
-        editUrl: 'https://github.com/your-org/…', // adjust if you want "edit this page"
-      },
-    ],
-  ],
+  // Set the production url of your site here
+  url: "https://your-docusaurus-site.example.com",
+  // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "continuousactivelearning", // Usually your GitHub org/user name.
-  projectName: "vibe", // Usually your repo name.
+  organizationName: "facebook", // Usually your GitHub org/user name.
+  projectName: "docusaurus", // Usually your repo name.
 
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -125,7 +44,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            "https://github.com/continuousactivelearning/vibe/edit/main/docs/",
+            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
         },
         blog: {
           showReadingTime: true,
@@ -148,42 +67,33 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
   themeConfig: {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
     navbar: {
-      title: "ViBe",
+      title: "My Site",
       logo: {
-        alt: "Vikram Betaal(ViBe) Logo",
-        src: "img/logo.png",
+        alt: "My Site Logo",
+        src: "img/logo.svg",
       },
       items: [
         {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Documentation",
+          label: "Docs",
         },
+        { to: "/blog", label: "Blog", position: "left" },
         {
-          type: 'docSidebar',
-          sidebarId: 'newSidebar',
-          position: 'left',
-          label: 'MERN Tutorial',       // <-- your new section name
-          docsPluginId: 'newdocs',  // <-- point at the plugin instance
-         },
-        {
-          href: "https://github.com/continuousactivelearning/vibe",
+          href: "https://github.com/facebook/docusaurus",
           label: "GitHub",
           position: "right",
         },
       ],
-    },
-    algolia: {
-      appId: 'XXGSK16Q2E',
-      apiKey: '185a09fe6fdd903609d79c14183bbe32',
-      insights: true,
-      indexName: 'continuousactivelearningio',
-      contextualSearch: true,
     },
     footer: {
       style: "dark",
@@ -192,8 +102,8 @@ const config: Config = {
           title: "Docs",
           items: [
             {
-              label: "Documentation",
-              to: "/docs/getting-started/intro",
+              label: "Docs",
+              to: "/docs/UserGuide/Overview",
             },
           ],
         },
@@ -201,12 +111,16 @@ const config: Config = {
           title: "Community",
           items: [
             {
-              label: "GitHub",
-              href: "https://github.com/continuousactivelearning/vibe",
+              label: "Stack Overflow",
+              href: "https://stackoverflow.com/questions/tagged/docusaurus",
             },
             {
-              label: "LinkedIn",
-              href: "https://www.linkedin.com/company/educationdesignlab/?viewAsMember=true",
+              label: "Discord",
+              href: "https://discordapp.com/invite/docusaurus",
+            },
+            {
+              label: "X",
+              href: "https://x.com/docusaurus",
             },
           ],
         },
@@ -217,10 +131,14 @@ const config: Config = {
               label: "Blog",
               to: "/blog",
             },
+            {
+              label: "GitHub",
+              href: "https://github.com/facebook/docusaurus",
+            },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} DLED IIT Ropar.`,
+      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
