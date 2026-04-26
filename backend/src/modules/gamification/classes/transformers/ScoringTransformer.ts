@@ -1,9 +1,19 @@
-import { ConfidenceScore, IQuizAttempt, IQuestionGrade, IScoringWeights, IScoreBreakdown, IScoringResponse } from '#gamification/interfaces/scoring.js';
-import { Expose, Type, Transform } from 'class-transformer';
-import { JSONSchema } from 'class-validator-jsonschema';
-import { ObjectId } from 'mongodb';
-import { ObjectIdToString, StringToObjectId } from '#root/shared/constants/transformerConstants.js';
-import { QuizAttemptValidator } from '#gamification/classes/validators/ScoringValidators.js';
+import {
+  ConfidenceScore,
+  IQuizAttempt,
+  IQuestionGrade,
+  IScoringWeights,
+  IScoreBreakdown,
+  IScoringResponse,
+} from '#gamification/interfaces/scoring.js';
+import {Expose, Type, Transform} from 'class-transformer';
+import {JSONSchema} from 'class-validator-jsonschema';
+import {ObjectId} from 'mongodb';
+import {
+  ObjectIdToString,
+  StringToObjectId,
+} from '#root/shared/constants/transformerConstants.js';
+import {QuizAttemptValidator} from '#gamification/classes/validators/ScoringValidators.js';
 
 export class QuizAttempt implements IQuizAttempt {
   @Expose()
@@ -11,8 +21,8 @@ export class QuizAttempt implements IQuizAttempt {
     description: 'User ID',
     example: '60d5ec49b3f1c8e4a8f8b8c1',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
-  @Transform(StringToObjectId.transformer, { toClassOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
+  @Transform(StringToObjectId.transformer, {toClassOnly: true})
   userId: string | ObjectId;
 
   @Expose()
@@ -20,8 +30,8 @@ export class QuizAttempt implements IQuizAttempt {
     description: 'Quiz ID',
     example: '60d5ec49b3f1c8e4a8f8b8c2',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
-  @Transform(StringToObjectId.transformer, { toClassOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
+  @Transform(StringToObjectId.transformer, {toClassOnly: true})
   quizId: string | ObjectId;
 
   @Expose()
@@ -29,8 +39,8 @@ export class QuizAttempt implements IQuizAttempt {
     description: 'Attempt ID',
     example: '60d5ec49b3f1c8e4a8f8b8c3',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
-  @Transform(StringToObjectId.transformer, { toClassOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
+  @Transform(StringToObjectId.transformer, {toClassOnly: true})
   attemptId: string | ObjectId;
 
   @Expose()
@@ -38,8 +48,8 @@ export class QuizAttempt implements IQuizAttempt {
     description: 'Metric ID',
     example: '60d5ec49b3f1c8e4a8f8b8c4',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
-  @Transform(StringToObjectId.transformer, { toClassOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
+  @Transform(StringToObjectId.transformer, {toClassOnly: true})
   metricId: string | ObjectId;
 
   @Expose()
@@ -83,8 +93,8 @@ export class QuestionGrade implements IQuestionGrade {
     description: 'Question ID',
     example: '60d5ec49b3f1c8e4a8f8b8c1',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
-  @Transform(StringToObjectId.transformer, { toClassOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
+  @Transform(StringToObjectId.transformer, {toClassOnly: true})
   questionId: string | ObjectId;
 
   @Expose()
@@ -106,7 +116,7 @@ export class ScoringWeights implements IScoringWeights {
     description: 'Unique identifier',
     example: '60d5ec49b3f1c8e4a8f8b8c1',
   })
-  @Transform(ObjectIdToString.transformer, { toPlainOnly: true })
+  @Transform(ObjectIdToString.transformer, {toPlainOnly: true})
   _id?: ObjectId;
 
   @Expose()

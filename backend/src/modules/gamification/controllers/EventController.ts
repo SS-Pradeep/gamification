@@ -12,9 +12,10 @@ import {
   NotFoundError,
 } from 'routing-controllers';
 
-import {eventService} from '#gamification/services/index.js';
+import {EventService} from '#gamification/services/index.js';
 import {
   Events,
+  EventsResponse,
   EventsBody,
   ReadEventParams,
   UpdateEvents,
@@ -33,40 +34,40 @@ import {OpenAPI} from 'routing-controllers-openapi';
 export class EventController {
   constructor(
     @inject(GAMIFICATION_TYPES.EventService)
-    private readonly eventService: eventService,
+    private readonly eventService: EventService,
   ) {}
 
   @Authorized(['admin', 'instructor'])
   @HttpCode(201)
   @Post('/events')
-  async createEvent(@Body() event: EventsBody): Promise<Events> {
+  async createEvent(@Body() event: EventsBody): Promise<EventsResponse> {
     // Transform the event body to an instance of Events
     const eventInstance = new Events(event);
 
     const createdEvent = await this.eventService.createEvent(eventInstance);
 
     // Return the created event
-    return createdEvent;
+    return new EventsResponse(createdEvent);
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/events')
-  async readEvents(): Promise<Events[]> {
+  async readEvents(): Promise<EventsResponse[]> {
     const events = await this.eventService.readEvents();
     if (!events || events.length === 0) {
       throw new NotFoundError('No events found');
     }
-    return events;
+    return events.map(event => new EventsResponse(event));
   }
 
   @Authorized(['admin', 'instructor'])
   @Get('/events/:eventId')
-  async readEvent(@Params() params: ReadEventParams): Promise<Events> {
+  async readEvent(@Params() params: ReadEventParams): Promise<EventsResponse> {
     const event = await this.eventService.readEvent(params.eventId);
     if (!event) {
       throw new NotFoundError(`Event with ID ${params.eventId} not found`);
     }
-    return event;
+    return new EventsResponse(event);
   }
 
   @Authorized(['admin', 'instructor'])

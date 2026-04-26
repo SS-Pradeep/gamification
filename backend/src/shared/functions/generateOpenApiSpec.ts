@@ -86,7 +86,7 @@ export function filterMetadataByModulePrefix(modulePrefix: string) {
 
 function getSchemasForValidators(validators: Function[]) {
   const validatorSet = new Set(validators);
-  let storage: MetadataStorage = getMetadataStorage();
+  const storage: MetadataStorage = getMetadataStorage();
 
   const filteredValidationMetadatas: Map<Function, ValidationMetadata[]> =
     new Map();
@@ -141,12 +141,12 @@ export function generateOpenAPISpec(
   // Create OpenAPI specification
   const spec = routingControllersToSpec(storage, routingControllersOptions, {
     info: {
-      title: 'ViBe API Documentation',
+      title: 'Gamification API',
       version: '1.0.0',
-      description: 'API documentation for the ViBe platform',
+      description: 'API documentation for the Gamification platform',
       contact: {
-        name: 'ViBe Team',
-        email: 'support@vibe.com',
+        name: 'Gamification Team',
+        email: 'support@gamification.com',
       },
     },
 
@@ -229,36 +229,6 @@ export function generateOpenAPISpec(
       },
     ],
     'x-tagGroups': [
-      {
-        name: 'Authentication',
-        tags: ['Authentication'],
-      },
-      {
-        name: 'Course Management',
-        tags: [
-          'Courses',
-          'Course Versions',
-          'Course Modules',
-          'Course Sections',
-          'Course Items',
-        ],
-      },
-      {
-        name: 'Quizzes',
-        tags: ['Quiz', 'Questions', 'Quiz Attempts', 'Question Banks'],
-      },
-      {
-        name: 'Notifications',
-        tags: ['Invites'],
-      },
-      {
-        name: 'Users',
-        tags: ['Enrollments', 'Progress', 'Users'],
-      },
-      {
-        name: 'Settings',
-        tags: ['Course Settings', 'User Settings'],
-      },
       {
         name: 'Gamification',
         tags: [

@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {
   IsNotEmpty,
   IsString,
@@ -7,7 +6,6 @@ import {
   ValidationArguments,
   IsMongoId,
   IsObject,
-  IsOptional,
 } from 'class-validator';
 import {JSONSchema} from 'class-validator-jsonschema';
 import {

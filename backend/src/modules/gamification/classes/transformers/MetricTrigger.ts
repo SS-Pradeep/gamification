@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform, Type} from 'class-transformer';
 import {
   ObjectIdToString,

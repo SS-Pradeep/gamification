@@ -5,7 +5,7 @@ on:
     branches:
       - main # Or your main branch name
     paths:
-      - 'backend/**' # Only trigger when files in backend folder are changed
+      - "backend/**" # Only trigger when files in backend folder are changed
   workflow_dispatch:
 
 permissions:
@@ -27,8 +27,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: backend
 
       - name: Lint Backend Code
-        run: pnpm run lint
-        working-directory: backend
+        run: pnpm --filter ./backend lint

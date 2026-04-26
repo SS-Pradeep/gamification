@@ -13,7 +13,7 @@ import {
   IMetricTrigger,
   IGoals,
   ID,
-} from '../../interfaces/models.js';
+} from '#shared/interfaces/models.js';
 
 /**
  * Interface for gamification engine repository.

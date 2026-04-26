@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -112,6 +111,34 @@ export class Goals implements IGoals {
       this.slug = goal.slug;
       this.scope = goal.scope;
       this.achievementIds = goal.achievementIds;
+    }
+  }
+}
+
+export class GoalsResponse implements IGoals {
+  _id?: string;
+  Name: string;
+  Description: string;
+  triggerType: Trigger;
+  value: number;
+  metricId: string;
+  achievementIds: string[];
+  slug: string;
+  scope: string;
+
+  constructor(goal?: Goals) {
+    if (goal) {
+      this._id = goal._id?.toString();
+      this.Name = goal.Name;
+      this.Description = goal.Description;
+      this.triggerType = goal.triggerType;
+      this.value = goal.value;
+      this.metricId = goal.metricId?.toString();
+      this.achievementIds = (goal.achievementIds || []).map(achievementId =>
+        achievementId.toString(),
+      );
+      this.slug = goal.slug;
+      this.scope = goal.scope;
     }
   }
 }

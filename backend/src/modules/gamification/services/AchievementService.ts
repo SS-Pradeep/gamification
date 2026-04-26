@@ -18,7 +18,7 @@ import {ObjectId} from 'mongodb';
  * Manages CRUD operations for achievements that users can unlock
  */
 @injectable()
-export class achievementService extends BaseService {
+export class AchievementService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.GamifyEngineRepo)
     private readonly gamifyEngineRepo: IGamifyEngineRepository,
@@ -101,9 +101,8 @@ export class achievementService extends BaseService {
    */
   getAchievements(): Promise<MetricAchievement[]> {
     return this._withTransaction(async session => {
-      const achievements = await this.gamifyEngineRepo.readAllAchievements(
-        session,
-      );
+      const achievements =
+        await this.gamifyEngineRepo.readAllAchievements(session);
 
       return plainToInstance(MetricAchievement, achievements);
     });
@@ -158,13 +157,11 @@ export class achievementService extends BaseService {
         excludeExtraneousValues: true,
       });
 
-      let existingAchievement, updateResult;
-
       const isSlug = !ObjectId.isValid(id);
 
       const achievementId = isSlug ? id : new ObjectId(id);
 
-      existingAchievement = await this.gamifyEngineRepo.readAchievement(
+      const existingAchievement = await this.gamifyEngineRepo.readAchievement(
         achievementId,
         isSlug,
         session,
@@ -185,7 +182,7 @@ export class achievementService extends BaseService {
       );
 
       if (!areValidGoalIds.every(Boolean)) {
-        throw new NotFoundError(`One or more goals not found`);
+        throw new NotFoundError('One or more goals not found');
       }
 
       if (achievement.goalIds !== existingAchievement.goalIds) {
@@ -201,7 +198,7 @@ export class achievementService extends BaseService {
           );
       }
 
-      updateResult = await this.gamifyEngineRepo.updateAchievement(
+      const updateResult = await this.gamifyEngineRepo.updateAchievement(
         achievementId,
         achievement,
         isSlug,

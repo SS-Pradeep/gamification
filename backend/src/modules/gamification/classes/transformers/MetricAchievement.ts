@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -142,7 +141,7 @@ export class MetricAchievement implements IMetricAchievement {
     example: 1,
     type: 'number',
   })
-  version: number = 1; // Default version is 1 (for optimistic concurrency control
+  version = 1; // Default version is 1 (for optimistic concurrency control
 
   /**
    * Constructor - creates a new MetricAchievement instance
@@ -160,6 +159,40 @@ export class MetricAchievement implements IMetricAchievement {
       this.goalIds = achievementBody.goalIds;
       this.slug = achievementBody.slug;
       this.scope = achievementBody.scope;
+    }
+  }
+}
+
+export class MetricAchievementResponse implements IMetricAchievement {
+  _id?: string;
+  name: string;
+  description: string;
+  badgeUrl: string;
+  trigger: Trigger;
+  status?: AchievementStatus;
+  rewardMetricId?: string;
+  rewardIncrementValue?: number;
+  goalIds: string[];
+  slug: string;
+  scope: string;
+  version?: number;
+
+  constructor(metricAchievement?: MetricAchievement) {
+    if (metricAchievement) {
+      this._id = metricAchievement._id?.toString();
+      this.name = metricAchievement.name;
+      this.description = metricAchievement.description;
+      this.badgeUrl = metricAchievement.badgeUrl;
+      this.trigger = metricAchievement.trigger;
+      this.status = metricAchievement.status;
+      this.rewardMetricId = metricAchievement.rewardMetricId?.toString();
+      this.rewardIncrementValue = metricAchievement.rewardIncrementValue;
+      this.goalIds = (metricAchievement.goalIds || []).map(goalId =>
+        goalId.toString(),
+      );
+      this.slug = metricAchievement.slug;
+      this.scope = metricAchievement.scope;
+      this.version = metricAchievement.version;
     }
   }
 }

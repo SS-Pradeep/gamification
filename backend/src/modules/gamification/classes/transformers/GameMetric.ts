@@ -1,5 +1,4 @@
-import 'reflect-metadata';
-import {Exclude, Expose, Transform} from 'class-transformer';
+import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
   StringToObjectId,
@@ -226,6 +225,7 @@ class GameMetricResponse implements IGameMetric {
   type: GameMetricType;
   units: string;
   defaultIncrementValue: number;
+  streakResolutionStrategy?: StreakResolutionType;
   slug: string;
   scope: string;
 
@@ -233,14 +233,17 @@ class GameMetricResponse implements IGameMetric {
    * Constructor - creates a response object from a GameMetric
    * @param gameMetric - The GameMetric instance to convert
    */
-  constructor(gameMetric: GameMetric) {
+  constructor(gameMetric?: GameMetric) {
     if (gameMetric) {
-      this._id = gameMetric._id.toString();
+      this._id = gameMetric._id?.toString();
       this.name = gameMetric.name;
       this.description = gameMetric.description;
       this.type = gameMetric.type;
       this.units = gameMetric.units;
       this.defaultIncrementValue = gameMetric.defaultIncrementValue;
+      this.streakResolutionStrategy = gameMetric.streakResolutionStrategy;
+      this.slug = gameMetric.slug;
+      this.scope = gameMetric.scope;
     }
   }
 }

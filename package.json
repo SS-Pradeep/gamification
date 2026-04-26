@@ -10,11 +10,14 @@
   },
   "scripts": {
     "prepare": "husky",
-    "binaries": "pnpx ts-node scripts/preload-mongo-binary.ts"
+    "binaries": "pnpx ts-node scripts/preload-mongo-binary.ts",
+    "lint": "pnpm --filter ./backend lint",
+    "lint:fix": "pnpm --filter ./backend lint:fix",
+    "typecheck": "pnpm --filter ./backend typecheck"
   },
   "lint-staged": {
     "backend/**/*.{js,jsx,ts,tsx}": [
-      "pnpm --filter backend lint"
+      "pnpm --filter ./backend lint"
     ]
   }
 }

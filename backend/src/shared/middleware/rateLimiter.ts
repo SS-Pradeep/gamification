@@ -14,7 +14,7 @@ export const authRateLimiter = rateLimit({
   limit: 5, // Max 5 requests per 15 minutes per IP
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many authentication attempts. Please try again later.' },
+  message: {error: 'Too many authentication attempts. Please try again later.'},
 });
 
 export function AuthRateLimiter(

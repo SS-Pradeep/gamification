@@ -8,8 +8,8 @@ import {
 } from 'routing-controllers';
 
 import {
-  eventService,
-  metricTriggerService,
+  EventService,
+  MetricTriggerService,
 } from '#gamification/services/index.js';
 import {
   EventTriggerBody,
@@ -31,10 +31,10 @@ import {OpenAPI} from 'routing-controllers-openapi';
 export class TriggerController {
   constructor(
     @inject(GAMIFICATION_TYPES.EventService)
-    private readonly eventService: eventService,
+    private readonly eventService: EventService,
 
     @inject(GAMIFICATION_TYPES.MetricTriggerService)
-    private readonly MetricTriggerService: metricTriggerService,
+    private readonly metricTriggerService: MetricTriggerService,
   ) {}
 
   @Authorized(['admin', 'instructor', 'user'])
@@ -62,9 +62,8 @@ export class TriggerController {
     @Body() body: MetricTriggerValidator,
   ): Promise<MetricTriggerResponse> {
     const metricTrigger = new MetricTrigger(body);
-    const metricTriggerResult = await this.MetricTriggerService.metricTrigger(
-      metricTrigger,
-    );
+    const metricTriggerResult =
+      await this.metricTriggerService.metricTrigger(metricTrigger);
 
     return metricTriggerResult;
   }

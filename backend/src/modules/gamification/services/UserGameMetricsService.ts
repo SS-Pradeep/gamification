@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {inject, injectable} from 'inversify';
 import {GLOBAL_TYPES} from '#root/types.js';
 import {
@@ -16,7 +15,7 @@ import {NotFoundError} from 'routing-controllers';
  * Manages user progress tracking on individual metrics
  */
 @injectable()
-export class userGameMetricsService extends BaseService {
+export class UserGameMetricsService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.GamifyEngineRepo)
     private readonly gamifyEngineRepo: IGamifyEngineRepository,
@@ -94,9 +93,8 @@ export class userGameMetricsService extends BaseService {
         session,
       );
 
-      const allMetrics = await this.gamifyEngineRepo.readAllGameMetrics(
-        session,
-      );
+      const allMetrics =
+        await this.gamifyEngineRepo.readAllGameMetrics(session);
 
       if (!allMetrics || allMetrics.length === 0) {
         throw new NotFoundError('No game metrics found in the system');

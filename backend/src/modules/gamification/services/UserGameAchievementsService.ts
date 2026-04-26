@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {inject, injectable} from 'inversify';
 import {GLOBAL_TYPES} from '#root/types.js';
 import {
@@ -16,7 +15,7 @@ import {NotFoundError} from 'routing-controllers';
  * Manages user achievement collections and their unlocked status
  */
 @injectable()
-export class userGameAchievementsService extends BaseService {
+export class UserGameAchievementsService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.GamifyEngineRepo)
     private readonly gamifyEngineRepo: IGamifyEngineRepository,

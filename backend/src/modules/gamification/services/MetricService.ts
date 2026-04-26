@@ -8,7 +8,7 @@ import {
   IUpdateGameMetric,
 } from '#root/shared/index.js';
 import {GLOBAL_TYPES} from '#root/types.js';
-import {GameMetric, UpdateGameMetric} from '#gamification/classes/index.js';
+import {GameMetric, UpdateGameMetricBody} from '#gamification/classes/index.js';
 import {plainToInstance} from 'class-transformer';
 
 /**
@@ -16,7 +16,7 @@ import {plainToInstance} from 'class-transformer';
  * Manages CRUD operations for trackable metrics in the gamification system
  */
 @injectable()
-export class metricService extends BaseService {
+export class MetricService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.GamifyEngineRepo)
     private readonly gamifyEngineRepo: IGamifyEngineRepository,
@@ -98,17 +98,15 @@ export class metricService extends BaseService {
       const isSlug = !ObjectId.isValid(id);
       const gameMetricId = isSlug ? id : new ObjectId(id);
 
-      let updatedResult;
-
       gameMetric = plainToInstance(
-        UpdateGameMetric,
+        UpdateGameMetricBody,
         {...gameMetric},
         {
           excludeExtraneousValues: true,
         },
       );
 
-      updatedResult = await this.gamifyEngineRepo.updateGameMetric(
+      const updatedResult = await this.gamifyEngineRepo.updateGameMetric(
         gameMetricId,
         gameMetric,
         isSlug,
@@ -130,8 +128,6 @@ export class metricService extends BaseService {
    */
   deleteGameMetric(id: string): Promise<boolean> {
     return this._withTransaction(async session => {
-      let deleteResult;
-
       const isSlug = !ObjectId.isValid(id);
       const gameMetricId = isSlug ? id : new ObjectId(id);
 
@@ -139,7 +135,7 @@ export class metricService extends BaseService {
         ? (await this.gamifyEngineRepo.readGameMetric(id, true, session))?._id
         : gameMetricId;
 
-      deleteResult = await this.gamifyEngineRepo.deleteGameMetric(
+      const deleteResult = await this.gamifyEngineRepo.deleteGameMetric(
         gameMetricId,
         isSlug,
         session,

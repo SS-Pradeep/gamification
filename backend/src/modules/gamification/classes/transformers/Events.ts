@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -96,6 +95,28 @@ export class Events implements IEvents {
       this.eventPayload = body.eventPayload || {};
       this.scope = body?.scope;
       this.slug = body?.slug;
+    }
+  }
+}
+
+export class EventsResponse implements IEvents {
+  _id?: string;
+  eventName: string;
+  eventDescription: string;
+  eventVersion: string;
+  eventPayload: Record<string, any>;
+  slug: string;
+  scope: string;
+
+  constructor(event?: Events) {
+    if (event) {
+      this._id = event._id?.toString();
+      this.eventName = event.eventName;
+      this.eventDescription = event.eventDescription;
+      this.eventVersion = event.eventVersion;
+      this.eventPayload = event.eventPayload || {};
+      this.slug = event.slug;
+      this.scope = event.scope;
     }
   }
 }

@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {inject, injectable} from 'inversify';
 import {GLOBAL_TYPES} from '#root/types.js';
 import {
@@ -15,7 +14,7 @@ import {BadRequestError, NotFoundError} from 'routing-controllers';
  * Processes metric updates and determines which achievements to unlock
  */
 @injectable()
-export class metricTriggerService extends BaseService {
+export class MetricTriggerService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.GamifyEngineRepo)
     private readonly gamifyEngineRepo: IGamifyEngineRepository,

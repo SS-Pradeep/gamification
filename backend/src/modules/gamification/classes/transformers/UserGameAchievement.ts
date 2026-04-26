@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {Expose, Transform, TransformFnParams} from 'class-transformer';
 import {
   ObjectIdToString,
@@ -18,7 +17,7 @@ const achievementArrayTransformer = {
       return {
         ...item,
         achievementId:
-          typeof item.achievementId == 'string'
+          typeof item.achievementId === 'string'
             ? new ObjectId(item.achievementId)
             : item.achievementId,
       };
@@ -32,7 +31,7 @@ const achievementArrayTransformer = {
       return {
         ...item,
         achievementId:
-          typeof item.achievementId == 'object'
+          typeof item.achievementId === 'object'
             ? item.achievementId.toString()
             : item.achievementId,
       };
@@ -106,6 +105,29 @@ export class UserGameAchievement implements IUserGameAchievement {
       this.userId = body.userId;
       this.achievements = body.achievements || [];
       this.completedGoalIds = [];
+    }
+  }
+}
+
+export class UserGameAchievementResponse implements IUserGameAchievement {
+  _id?: string;
+  userId: string;
+  achievements: IAchievement[];
+  completedGoalIds: string[];
+
+  constructor(userGameAchievement?: UserGameAchievement) {
+    if (userGameAchievement) {
+      this._id = userGameAchievement._id?.toString();
+      this.userId = userGameAchievement.userId?.toString();
+      this.achievements = (userGameAchievement.achievements || []).map(
+        achievement => ({
+          achievementId: achievement.achievementId?.toString(),
+          unlockedAt: achievement.unlockedAt,
+        }),
+      );
+      this.completedGoalIds = (userGameAchievement.completedGoalIds || []).map(
+        goalId => goalId.toString(),
+      );
     }
   }
 }

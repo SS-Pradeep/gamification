@@ -9,7 +9,9 @@ interface LoadedModuleResult {
   validators: Function[];
 }
 
-export async function loadAppModules(moduleName: string): Promise<LoadedModuleResult> {
+export async function loadAppModules(
+  moduleName: string,
+): Promise<LoadedModuleResult> {
   const isAll = moduleName === 'all';
   const modulesDir = path.resolve('./src/modules');
   const files = await fs.readdir(modulesDir);
@@ -52,4 +54,3 @@ export async function loadAppModules(moduleName: string): Promise<LoadedModuleRe
 
   return {controllers, validators};
 }
-

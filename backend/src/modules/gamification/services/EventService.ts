@@ -15,21 +15,21 @@ import {plainToInstance} from 'class-transformer';
 import {ObjectId} from 'mongodb';
 import jsonLogic from 'json-logic-js';
 import {GAMIFICATION_TYPES} from '../types.js';
-import {metricTriggerService} from './MetricTriggerService.js';
+import {MetricTriggerService} from './MetricTriggerService.js';
 import {EventTrigger} from '../classes/transformers/EventTrigger.js';
-import {ruleService} from '#gamification/services/RuleService.js';
+import {RuleService} from '#gamification/services/RuleService.js';
 
 @injectable()
-export class eventService extends BaseService {
+export class EventService extends BaseService {
   constructor(
     @inject(GLOBAL_TYPES.Database)
     private readonly mongodatabase: MongoDatabase,
     @inject(GLOBAL_TYPES.GamifyLayerRepo)
     private readonly gamifyLayerRepo: IGamifyLayerRepository,
     @inject(GAMIFICATION_TYPES.MetricTriggerService)
-    private readonly metricTriggerService: metricTriggerService,
+    private readonly metricTriggerService: MetricTriggerService,
     @inject(GAMIFICATION_TYPES.RuleService)
-    private readonly ruleService: ruleService,
+    private readonly ruleService: RuleService,
   ) {
     super(mongodatabase);
   }
@@ -210,9 +210,8 @@ export class eventService extends BaseService {
       }
 
       // Request the gamify engine to trigger the metrics for the user.
-      const triggerResponse = await this.metricTriggerService.metricTrigger(
-        metricTrigger,
-      );
+      const triggerResponse =
+        await this.metricTriggerService.metricTrigger(metricTrigger);
 
       return triggerResponse;
     });

@@ -32,7 +32,7 @@ export const gamificationContainerModules: ContainerModule[] = [
 
 export function setupGamificationContainer() {
   const container = new Container();
-  container.load(...gamificationContainerModules);
+  void container.load(...gamificationContainerModules);
   const inversifyAdapter = new InversifyAdapter(container);
   useContainer(inversifyAdapter);
   return container;
